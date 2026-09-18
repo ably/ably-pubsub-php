@@ -1,6 +1,6 @@
 <?php
 namespace tests;
-use Ably\PubSub\AblyRest;
+use Ably\PubSub\PubSubHttpClient;
 use Ably\PubSub\Channel;
 use Ably\PubSub\Http;
 use Ably\PubSub\Log;
@@ -20,7 +20,7 @@ class ChannelMessagesTest extends \PHPUnit\Framework\TestCase {
     public static function setUpBeforeClass(): void {
         self::$testApp = new TestApp();
         self::$defaultOptions = self::$testApp->getOptions();
-        self::$ably = new AblyRest( array_merge( self::$defaultOptions, [
+        self::$ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
         ] ) );
     }
@@ -192,7 +192,7 @@ class ChannelMessagesTest extends \PHPUnit\Framework\TestCase {
             $messages[] = $msg;
         }
 
-        $ably = new AblyRest( array_merge( self::$defaultOptions, [
+        $ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
             'httpClass' => 'tests\HttpMockMsgCounter',
         ] ) );
@@ -327,7 +327,7 @@ class ChannelMessagesTest extends \PHPUnit\Framework\TestCase {
     public function testEncryptedMessageUnencryptedHistory() {
         $errorLogged = false;
 
-        $ably = new AblyRest( array_merge( self::$defaultOptions, [
+        $ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
             'logHandler' => function( $level, $args ) use ( &$errorLogged ) {
                 if ( $level == Log::ERROR ) {
@@ -378,7 +378,7 @@ class ChannelMessagesTest extends \PHPUnit\Framework\TestCase {
     public function testEncryptionKeyMismatch() {
         $errorLogged = false;
 
-        $ably = new AblyRest( array_merge( self::$defaultOptions, [
+        $ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
             'logHandler' => function( $level, $args ) use ( &$errorLogged ) {
                 if ( $level == Log::ERROR ) {
@@ -552,7 +552,7 @@ class ChannelMessagesTest extends \PHPUnit\Framework\TestCase {
      * Test if null name and data elements are allowed when publishing messages
      */
     public function testNullData() {
-        $ably = new AblyRest( array_merge( self::$defaultOptions, [
+        $ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
             'httpClass' => 'tests\HttpSaveWrapper',
         ] ) );

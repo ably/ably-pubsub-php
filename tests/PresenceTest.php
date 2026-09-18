@@ -1,6 +1,6 @@
 <?php
 namespace tests;
-use Ably\PubSub\AblyRest;
+use Ably\PubSub\PubSubHttpClient;
 use Ably\PubSub\Exceptions\AblyRequestException;
 use Ably\PubSub\Utils\Crypto;
 use Ably\PubSub\Utils\Miscellaneous;
@@ -20,7 +20,7 @@ class PresenceTest extends \PHPUnit\Framework\TestCase {
 
         self::$testApp = new TestApp();
         self::$defaultOptions = self::$testApp->getOptions();
-        self::$ably = new AblyRest( array_merge( self::$defaultOptions, [
+        self::$ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
         ] ) );
 

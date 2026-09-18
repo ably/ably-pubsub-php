@@ -49,10 +49,10 @@ final class Server {
      * ClientOptions instance, or a string holding an API key or a token.
      *
      * @param \Ably\PubSub\Models\ClientOptions|array|string $options
-     * @return \Ably\PubSub\AblyRest
+     * @return \Ably\PubSub\PubSubHttpClient
      */
     public static function createHttpClient( $options = [] ) {
-        return new AblyRest( self::withSideAgent( $options ) );
+        return new PubSubHttpClient( self::withSideAgent( $options ) );
     }
 
     /**

@@ -11,7 +11,8 @@ the full mapping table.
 **Breaking changes:**
 
 - The package is now `ably/pubsub-server`, installed with `composer require ably/pubsub-server`. `ably/ably-php` is superseded and receives security and critical-bug fixes only for one year from this release, from the `maintenance/1.x` branch.
-- The namespace is now `Ably\PubSub\`. Every class keeps its name, so `Ably\Models\Message` becomes `Ably\PubSub\Models\Message`.
+- The namespace is now `Ably\PubSub\`. Every class other than the client keeps its name, so `Ably\Models\Message` becomes `Ably\PubSub\Models\Message`.
+- The client class `Ably\AblyRest` is now `Ably\PubSub\PubSubHttpClient` ([PDR-091d](https://ably.atlassian.net/wiki/spaces/product/pages/5363957781)). Applications that only construct through `Server::createHttpClient()` are unaffected; type hints and DI bindings naming the class must be updated.
 - Clients are constructed through `Ably\PubSub\Server::createHttpClient()`, which declares the server side on the wire. It accepts everything the constructor accepted: an options array, an API key string, a token string, or a `ClientOptions` instance. A client constructed directly declares no side, and is rejected on accounts with monthly-active-user pricing enabled.
 - Removed `AblyRest::setAblyAgentHeader()` and `AblyRest::setLibraryFlavourString()`, replaced by the per-client `agents` client option.
 - Removed `ably-loader.php`; Composer's autoloader is the only supported install path.

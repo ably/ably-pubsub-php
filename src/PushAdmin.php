@@ -9,9 +9,9 @@ class PushAdmin {
 
     /**
      * Constructor
-     * @param AblyRest $ably Ably API instance
+     * @param PubSubHttpClient $ably Ably API instance
      */
-    public function __construct( AblyRest $ably ) {
+    public function __construct( PubSubHttpClient $ably ) {
         $this->ably = $ably;
         $this->deviceRegistrations = new PushDeviceRegistrations( $ably );
         $this->channelSubscriptions = new PushChannelSubscriptions ( $ably );

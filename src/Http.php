@@ -1,7 +1,7 @@
 <?php
 namespace Ably\PubSub;
 
-use Ably\PubSub\AblyRest;
+use Ably\PubSub\PubSubHttpClient;
 use Ably\PubSub\Log;
 use Ably\PubSub\Exceptions\AblyException;
 use Ably\PubSub\Exceptions\AblyRequestException;

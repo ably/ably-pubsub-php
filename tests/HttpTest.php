@@ -1,7 +1,7 @@
 <?php
 namespace tests;
 
-use Ably\PubSub\AblyRest;
+use Ably\PubSub\PubSubHttpClient;
 use Ably\PubSub\Defaults;
 use Ably\PubSub\Http;
 use Ably\PubSub\Utils\CurlWrapper;
@@ -21,7 +21,7 @@ class HttpTest extends \PHPUnit\Framework\TestCase {
     public static function setUpBeforeClass(): void {
         self::$testApp = new TestApp();
         self::$defaultOptions = self::$testApp->getOptions();
-        self::$ably = new AblyRest( array_merge( self::$defaultOptions, [
+        self::$ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
         ] ) );
     }
@@ -38,7 +38,7 @@ class HttpTest extends \PHPUnit\Framework\TestCase {
             'key' => 'fake.key:totallyFake',
             'httpClass' => 'tests\HttpMock',
         ];
-        $ably = new AblyRest( $opts );
+        $ably = new PubSubHttpClient( $opts );
         $ably->time(); // make a request
 
         $curlParams = $ably->http->getCurlLastParams();
@@ -84,13 +84,13 @@ class HttpTest extends \PHPUnit\Framework\TestCase {
      * Verify proper agent header is set as per RSC7d
      */
     public function testAblyAgentHeader() {
-        $ably = new AblyRest( self::mockOptions() );
+        $ably = new PubSubHttpClient( self::mockOptions() );
 
         $this->assertSame( self::expectedPrefix(), self::sentAgentHeader( $ably ),
             'Expected Ably agent header in HTTP request' );
 
         // a second client renders the same header: no state leaks between instances
-        $ably = new AblyRest( self::mockOptions() );
+        $ably = new PubSubHttpClient( self::mockOptions() );
 
         $this->assertSame( self::expectedPrefix(), self::sentAgentHeader( $ably ),
             'Expected Ably agent header in HTTP request' );
@@ -101,7 +101,7 @@ class HttpTest extends \PHPUnit\Framework\TestCase {
      * process-global static state (RSC7d).
      */
     public function testAblyAgentHeaderWithAgentsOption() {
-        $ably = new AblyRest( self::mockOptions( [
+        $ably = new PubSubHttpClient( self::mockOptions( [
             'agents' => [ 'laravel' => null, 'customLib' => '2.3.5' ],
         ] ) );
 
@@ -159,7 +159,7 @@ class HttpTest extends \PHPUnit\Framework\TestCase {
      * the constructor directly declares none.
      */
     public function testBareConstructorDeclaresNoSide() {
-        $agentHeader = self::sentAgentHeader( new AblyRest( self::mockOptions() ) );
+        $agentHeader = self::sentAgentHeader( new PubSubHttpClient( self::mockOptions() ) );
 
         $this->assertStringNotContainsString( 'ably-pubsub-server', $agentHeader,
             'A directly constructed client must not declare the server side' );
@@ -220,7 +220,7 @@ class HttpTest extends \PHPUnit\Framework\TestCase {
             'clientId' => 'test',
         ];
 
-        $ably = new AblyRest( [
+        $ably = new PubSubHttpClient( [
             'key' => 'fake.key:totallyFake',
             'authUrl' => 'http://test.test/tokenRequest',
             'authParams' => $authParams,
@@ -250,7 +250,7 @@ class HttpTest extends \PHPUnit\Framework\TestCase {
             'clientId' => 'test',
         ];
 
-        $ably = new AblyRest( [
+        $ably = new PubSubHttpClient( [
             'key' => 'fake.key:totallyFake',
             'authUrl' => 'http://test.test/tokenRequest',
             'authParams' => $authParams,
@@ -271,7 +271,7 @@ class HttpTest extends \PHPUnit\Framework\TestCase {
     }
 
     /**
-     * RSC19 Test basic AblyRest::request functionality
+     * RSC19 Test basic PubSubHttpClient::request functionality
      */
     public function testRequestBasic() {
         $ably = self::$ably;
@@ -313,7 +313,7 @@ class HttpTest extends \PHPUnit\Framework\TestCase {
      * RSC19 - Test that Response handles various returned structures properly
      */
     public function testRequestReturnValues() {
-        $ably = new AblyRest( [
+        $ably = new PubSubHttpClient( [
             'key' => 'fake.key:totallyFake',
             'httpClass' => 'tests\HttpMockReturnData',
         ] );

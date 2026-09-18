@@ -13,7 +13,7 @@ use MessagePack\PackOptions;
 /**
  * Ably REST client
  */
-class AblyRest {
+class PubSubHttpClient {
 
     public $options;
 
@@ -138,7 +138,7 @@ class AblyRest {
 
     /**
      * Does a GET request, automatically injecting auth headers and handling fallback on server failure
-     * @see AblyRest::request()
+     * @see PubSubHttpClient::request()
      */
     public function get( $path, $headers = [], $params = [], $returnHeaders = false, $auth = true ) {
         return $this->requestInternal( 'GET', $path, $headers, $params, $returnHeaders, $auth );
@@ -146,7 +146,7 @@ class AblyRest {
 
     /**
      * Does a POST request, automatically injecting auth headers and handling fallback on server failure
-     * @see AblyRest::request()
+     * @see PubSubHttpClient::request()
      */
     public function post( $path, $headers = [], $params = [], $returnHeaders = false, $auth = true ) {
         return $this->requestInternal( 'POST', $path, $headers, $params, $returnHeaders, $auth );
@@ -154,7 +154,7 @@ class AblyRest {
 
     /**
      * Does a PUT request, automatically injecting auth headers and handling fallback on server failure
-     * @see AblyRest::request()
+     * @see PubSubHttpClient::request()
      */
     public function put( $path, $headers = [], $params = [], $returnHeaders = false, $auth = true ) {
         return $this->requestInternal( 'PUT', $path, $headers, $params, $returnHeaders, $auth );
@@ -162,7 +162,7 @@ class AblyRest {
 
     /**
      * Does a DELETE request, automatically injecting auth headers and handling fallback on server failure
-     * @see AblyRest::request()
+     * @see PubSubHttpClient::request()
      */
     public function delete( $path, $headers = [], $params = [], $returnHeaders = false, $auth = true ) {
         return $this->requestInternal( 'DELETE', $path, $headers, $params, $returnHeaders, $auth );

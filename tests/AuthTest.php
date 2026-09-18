@@ -1,6 +1,6 @@
 <?php
 namespace authTest;
-use Ably\PubSub\AblyRest;
+use Ably\PubSub\PubSubHttpClient;
 use Ably\PubSub\Auth;
 use Ably\PubSub\Exceptions\AblyException;
 use Ably\PubSub\Http;
@@ -35,7 +35,7 @@ class AuthTest extends \PHPUnit\Framework\TestCase {
         $this->expectException(AblyException::class);
         $this->expectExceptionCode(40103);
 
-        $ably = new AblyRest( array_merge( self::$defaultOptions, [
+        $ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
             'tls' => false,
         ] ) );
@@ -48,21 +48,21 @@ class AuthTest extends \PHPUnit\Framework\TestCase {
         $this->expectException(AblyException::class);
         $this->expectExceptionCode(40103);
 
-        $ably = new AblyRest( );
+        $ably = new PubSubHttpClient( );
     }
 
     /**
      * Init library with a token
      */
     public function testAuthWithToken() {
-        $ably_for_token = new AblyRest( array_merge( self::$defaultOptions, [
+        $ably_for_token = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
         ] ) );
         $tokenDetails = $ably_for_token->auth->requestToken();
 
         $this->assertNotNull($tokenDetails->token, 'Expected token id' );
 
-        $ably = new AblyRest( array_merge( self::$defaultOptions, [
+        $ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'tokenDetails' => $tokenDetails,
         ] ) );
 
@@ -75,7 +75,7 @@ class AuthTest extends \PHPUnit\Framework\TestCase {
      * Init library with a key, force use of token with useTokenAuth
      */
     public function testAuthWithKeyForceToken() {
-        $ably = new AblyRest( [
+        $ably = new PubSubHttpClient( [
             'key' => 'fake.key:totallyFake',
             'useTokenAuth' => true,
         ] );
@@ -90,7 +90,7 @@ class AuthTest extends \PHPUnit\Framework\TestCase {
         $this->expectException(AblyException::class);
         $this->expectExceptionCode(40103);
 
-        $ably = new AblyRest( [
+        $ably = new PubSubHttpClient( [
             'useTokenAuth' => true,
         ] );
     }
@@ -99,14 +99,14 @@ class AuthTest extends \PHPUnit\Framework\TestCase {
      * Verify than token auth works without TLS
      */
     public function testTokenWithoutTLS() {
-        $ably_for_token = new AblyRest( array_merge( self::$defaultOptions, [
+        $ably_for_token = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
         ] ) );
         $tokenDetails = $ably_for_token->auth->requestToken();
 
         $this->assertNotNull($tokenDetails->token, 'Expected token id' );
 
-        $ablyInsecure = new AblyRest( array_merge( self::$defaultOptions, [
+        $ablyInsecure = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'tokenDetails' => $tokenDetails,
             'tls' => false,
         ] ) );
@@ -122,7 +122,7 @@ class AuthTest extends \PHPUnit\Framework\TestCase {
     public function testTokenRequestWithAuthCallbackReturningSignedRequest() {
         $callbackCalled = false;
 
-        $ably = new AblyRest( array_merge( self::$defaultOptions, [
+        $ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'authCallback' => function( $tokenParams ) use( &$callbackCalled ) {
                 $callbackCalled = true;
 
@@ -149,7 +149,7 @@ class AuthTest extends \PHPUnit\Framework\TestCase {
     public function testTokenRequestWithAuthCallbackReturningTokenDetails() {
         $callbackCalled = false;
 
-        $ably = new AblyRest( array_merge( self::$defaultOptions, [
+        $ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'authCallback' => function( $tokenParams ) use( &$callbackCalled ) {
                 $callbackCalled = true;
 
@@ -175,7 +175,7 @@ class AuthTest extends \PHPUnit\Framework\TestCase {
     public function testTokenRequestWithAuthCallbackReturningTokenString() {
         $callbackCalled = false;
 
-        $ably = new AblyRest( array_merge( self::$defaultOptions, [
+        $ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'authCallback' => function( $tokenParams ) use( &$callbackCalled ) {
                 $callbackCalled = true;
 
@@ -197,7 +197,7 @@ class AuthTest extends \PHPUnit\Framework\TestCase {
     public function testTokenRequestWithAuthUrlReturningSignedRequest() {
         $method = 'POST';
 
-        $ably = new AblyRest( array_merge( self::$defaultOptions, [
+        $ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'authUrl' => 'https://TEST/tokenRequest',
             'httpClass' => 'authTest\HttpMock',
         ] ) );
@@ -212,7 +212,7 @@ class AuthTest extends \PHPUnit\Framework\TestCase {
      * Init library with an authUrl that returns TokenDetails
      */
     public function testTokenRequestWithAuthUrlReturningTokenDetails() {
-        $ably = new AblyRest( array_merge( self::$defaultOptions, [
+        $ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'authUrl' => 'https://TEST/tokenDetails',
             'httpClass' => 'authTest\HttpMock',
         ] ) );
@@ -227,7 +227,7 @@ class AuthTest extends \PHPUnit\Framework\TestCase {
      * Init library with an authUrl that returns a token string
      */
     public function testTokenRequestWithAuthUrlReturningTokenString() {
-        $ably = new AblyRest( array_merge( self::$defaultOptions, [
+        $ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'authUrl' => 'https://TEST/tokenString',
             'httpClass' => 'authTest\HttpMock',
         ] ) );
@@ -250,7 +250,7 @@ class AuthTest extends \PHPUnit\Framework\TestCase {
         $expectedAuthParams = [ 'param1' => 'value1', 'test' => 1, 'ttl' => 360000 ];
         $method = 'POST';
 
-        $ably = new AblyRest( array_merge( self::$defaultOptions, [
+        $ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'authUrl' => 'https://TEST/tokenRequest',
             'authHeaders' => $headers,
             'authParams' => $authParams,
@@ -285,7 +285,7 @@ class AuthTest extends \PHPUnit\Framework\TestCase {
      * and checks if ttl can be left blank
      */
     public function testCreateTokenRequestValidity() {
-        $ably = new AblyRest( array_merge( self::$defaultOptions, [
+        $ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
         ] ) );
 
@@ -298,7 +298,7 @@ class AuthTest extends \PHPUnit\Framework\TestCase {
 
         $timestamp = $ably->time();
 
-        $ably = new AblyRest( array_merge( self::$defaultOptions, [
+        $ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'authCallback' => function( $tokenParams ) use( $tokenRequest ) {
                 return $tokenRequest;
             },
@@ -327,7 +327,7 @@ class AuthTest extends \PHPUnit\Framework\TestCase {
      * Verify that createTokenRequest() supports tokenparams, authparams and overrides values correctly
      */
     public function testCreateTokenRequestParams() {
-        $ablyKey = new AblyRest( array_merge( self::$defaultOptions, [
+        $ablyKey = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
             'httpClass' => 'authTest\HttpMock',
             'clientId' => 'libClientId',
@@ -413,7 +413,7 @@ class AuthTest extends \PHPUnit\Framework\TestCase {
      * keeps using the same token, and renews it when forced
      */
     public function testAuthorize() {
-        $ably = new AblyRest( array_merge( self::$defaultOptions, [
+        $ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
             'authClass' => 'authTest\AuthMock'
         ] ) );
@@ -440,7 +440,7 @@ class AuthTest extends \PHPUnit\Framework\TestCase {
      * Verify that all the parameters are supported and saved as defaults
      */
     public function testAuthorizeParams() {
-        $ably = new AblyRest( array_merge( self::$defaultOptions, [
+        $ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
             'authClass' => 'authTest\AuthMock'
         ] ) );
@@ -516,7 +516,7 @@ class AuthTest extends \PHPUnit\Framework\TestCase {
      * Verify that authorize() stores the provided parameters and uses them as defaults from then on
      */
     public function testAuthorizeRememberDefaults() {
-        $ably = new AblyRest( array_merge( self::$defaultOptions, [
+        $ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
             'clientId' => 'originalClientId',
         ] ) );
@@ -541,7 +541,7 @@ class AuthTest extends \PHPUnit\Framework\TestCase {
      */
     public function testHTTPHeadersKey() {
         $fakeKey = 'fake.key:totallyFake';
-        $ably = new AblyRest( [
+        $ably = new PubSubHttpClient( [
             'key' => $fakeKey,
             'httpClass' => 'authTest\HttpMock',
         ] );
@@ -556,7 +556,7 @@ class AuthTest extends \PHPUnit\Framework\TestCase {
      */
     public function testHTTPHeadersToken() {
         $fakeToken = 'fakeToken';
-        $ably = new AblyRest( [
+        $ably = new PubSubHttpClient( [
             'token' => $fakeToken,
             'httpClass' => 'authTest\HttpMock',
         ] );

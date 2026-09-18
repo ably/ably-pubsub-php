@@ -1,6 +1,6 @@
 <?php
 namespace tests;
-use Ably\PubSub\AblyRest;
+use Ably\PubSub\PubSubHttpClient;
 
 require_once __DIR__ . '/factories/TestApp.php';
 
@@ -15,7 +15,7 @@ class ChannelStatusTest extends \PHPUnit\Framework\TestCase
     {
         self::$testApp = new TestApp();
         self::$defaultOptions = self::$testApp->getOptions();
-        self::$ably = new AblyRest(array_merge(self::$defaultOptions, [
+        self::$ably = new PubSubHttpClient(array_merge(self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
         ]));
     }
