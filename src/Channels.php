@@ -8,9 +8,9 @@ class Channels {
 
     /**
      * Constructor
-     * @param AblyRest $ably Ably API instance
+     * @param PubSubHttpClient $ably Ably API instance
      */
-    public function __construct( AblyRest $ably ) {
+    public function __construct( PubSubHttpClient $ably ) {
         $this->ably = $ably;
     }
 

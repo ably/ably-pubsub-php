@@ -1,6 +1,6 @@
 <?php
 namespace tests;
-use Ably\PubSub\AblyRest;
+use Ably\PubSub\PubSubHttpClient;
 use Ably\PubSub\Auth;
 use Ably\PubSub\Defaults;
 use Ably\PubSub\Exceptions\AblyException;

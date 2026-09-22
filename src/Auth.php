@@ -9,7 +9,7 @@ use Ably\PubSub\Models\TokenParams;
 use Ably\PubSub\Models\TokenRequest;
 
 /**
- * Provides authentification methods for AblyRest instances
+ * Provides authentification methods for PubSubHttpClient instances
  * @property-read string|null $clientId ClientId currently in use. Null if not
  * authenticated yet or when using anonymous auth.
  */
@@ -23,7 +23,7 @@ class Auth {
     protected $ably;
     const TOKEN_EXPIRY_MARGIN = 15000; // a token is considered expired a bit earlier to prevent race conditions
 
-    public function __construct( AblyRest $ably, ClientOptions $options ) {
+    public function __construct( PubSubHttpClient $ably, ClientOptions $options ) {
         $this->defaultAuthOptions = new AuthOptions($options);
         $this->defaultTokenParams = $options->defaultTokenParams;
         $this->ably = $ably;
@@ -31,7 +31,7 @@ class Auth {
         $this->basicAuth = empty( $this->defaultAuthOptions->useTokenAuth ) && $this->defaultAuthOptions->key;
 
         if ( $this->defaultAuthOptions->key && $this->defaultAuthOptions->clientId == '*' ) {
-            throw new AblyException ('Instantiating AblyRest with a wildcard clientId (`*`) not allowed.', 40012, 400);
+            throw new AblyException ('Instantiating PubSubHttpClient with a wildcard clientId (`*`) not allowed.', 40012, 400);
         }
 
         // Basic authentication

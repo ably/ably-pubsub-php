@@ -2,13 +2,11 @@
 
 ## 1.x (`ably/ably-php`) → 2.0.0 (`ably/pubsub-server`)
 
-> **Status: draft.** The final public API naming is still under review; [PDR-091d](https://ably.atlassian.net/wiki/spaces/product/pages/5363957781) may rename `AblyRest` to `HttpClient` before the 2.0.0 GA release. This section will be finalized before GA.
-
 Version 2.0.0 ships from a new package, `ably/pubsub-server`, under a new namespace, `Ably\PubSub\`. `ably/ably-php` is superseded: it receives security and critical-bug fixes only for one year from the 2.0.0 release date, and is then end-of-life.
 
 Under monthly-active-user pricing the platform has to classify every connection as device-side or server-side. The new package declares that automatically, on every request, in the `Ably-Agent` header; the old constructor cannot declare anything. That is the forcing function for this migration: once monthly-active-user pricing is live, `new Ably\AblyRest(...)` from `ably/ably-php` is rejected on accounts where it is enabled.
 
-The client `Server::createHttpClient()` returns is the same REST client as before. Channels, message publishing, history, presence, authentication, push admin, crypto and every `ClientOptions` key behave exactly as they did in 1.x. For most applications the migration is confined to the `composer require` line, the `use` statements, and the constructor call.
+The client `Server::createHttpClient()` returns is the same REST client as before, renamed from `AblyRest` to `PubSubHttpClient`. Channels, message publishing, history, presence, authentication, push admin, crypto and every `ClientOptions` key behave exactly as they did in 1.x. For most applications the migration is confined to the `composer require` line, the `use` statements, and the constructor call.
 
 ### Mapping
 
@@ -21,9 +19,9 @@ The client `Server::createHttpClient()` returns is the same REST client as befor
 | `AblyRest::setLibraryFlavourString('x')` | removed — use the `agents` option |
 | `require 'ably-loader.php';` | removed — use Composer's autoloader (`vendor/autoload.php`) |
 | PHP 7.2 – 8.0 | PHP `^8.1` (tested on 8.1 – 8.5) |
-| ⚠️ [091d](https://ably.atlassian.net/wiki/spaces/product/pages/5363957781): `\Ably\AblyRest` type hints | `\Ably\PubSub\HttpClient` (not yet decided) |
+| `\Ably\AblyRest` type hints | `\Ably\PubSub\PubSubHttpClient` ([091d](https://ably.atlassian.net/wiki/spaces/product/pages/5363957781)) |
 
-Every class moves namespace and keeps its name, so the rename is mechanical: replace the prefix `Ably\` with `Ably\PubSub\` throughout, including in type hints, `catch` blocks and fully-qualified string class names.
+Every class moves namespace, and `AblyRest` is the only one that also changes name, so the rename is mechanical: replace the prefix `Ably\` with `Ably\PubSub\` throughout — including in type hints, `catch` blocks and fully-qualified string class names — and then `AblyRest` with `PubSubHttpClient`.
 
 ### Example
 
@@ -45,7 +43,7 @@ $ably->channel('test-channel')->publish('test-event', 'hello world');
 
 ### Declaring the side
 
-Construct through the door. `new Ably\PubSub\AblyRest(...)` still works — the library and its own tests use it — but it declares no side, and will be rejected on monthly-active-user-enabled accounts just as the 1.x constructor is. The door produces:
+Construct through the door. `new Ably\PubSub\PubSubHttpClient(...)` still works — the library and its own tests use it — but it declares no side, and will be rejected on monthly-active-user-enabled accounts just as the 1.x constructor is. The door produces:
 
 ```
 Ably-Agent: ably-pubsub-php/2.0.0 php/8.3.4 ably-pubsub-server
@@ -72,7 +70,7 @@ The `agents` option is per-client, unlike the process-global static setters it r
 * The `demo/` Heroku application and its `Procfile`.
 * PHP 7.2 – 8.0 support.
 
-`Auth::authorise()`, the British-spelling alias deprecated in favour of `Auth::authorize()`, is still present in 2.0.0. It may be removed in the 091d pass before GA.
+`Auth::authorise()`, the British-spelling alias deprecated in favour of `Auth::authorize()`, is still present in 2.0.0.
 
 ### Unchanged
 

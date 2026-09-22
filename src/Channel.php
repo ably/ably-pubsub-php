@@ -29,12 +29,12 @@ class Channel {
 
     /**
      * Constructor
-     * @param AblyRest $ably Ably API instance
+     * @param PubSubHttpClient $ably Ably API instance
      * @param string $name Channel's name
      * @param ChannelOptions|array|null $options Channel options (for encrypted channels)
      * @throws AblyException
      */
-    public function __construct( AblyRest $ably, $name, $options = [] ) {
+    public function __construct( PubSubHttpClient $ably, $name, $options = [] ) {
         $this->ably = $ably;
         $this->name = $name;
         $this->channelPath = "/channels/" . urlencode( $name );

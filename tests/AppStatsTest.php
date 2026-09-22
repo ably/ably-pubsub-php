@@ -1,6 +1,6 @@
 <?php
 namespace tests;
-use Ably\PubSub\AblyRest;
+use Ably\PubSub\PubSubHttpClient;
 
 require_once __DIR__ . '/factories/TestApp.php';
 
@@ -17,7 +17,7 @@ class AppStatsTest extends \PHPUnit\Framework\TestCase {
     public static function setUpBeforeClass(): void {
         self::$testApp = new TestApp();
         self::$defaultOptions = self::$testApp->getOptions();
-        self::$ably = new AblyRest( array_merge( self::$defaultOptions, [
+        self::$ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
         ] ) );
 

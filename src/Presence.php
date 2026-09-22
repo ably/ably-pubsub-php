@@ -10,10 +10,10 @@ class Presence {
 
     /**
      * Constructor
-     * @param AblyRest $ably Ably API instance
+     * @param PubSubHttpClient $ably Ably API instance
      * @param Channel $channel Associated channel
      */
-    public function __construct( AblyRest $ably, Channel $channel ) {
+    public function __construct( PubSubHttpClient $ably, Channel $channel ) {
         $this->ably = $ably;
         $this->channel = $channel;
     }
