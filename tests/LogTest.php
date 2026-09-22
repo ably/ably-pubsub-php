@@ -1,7 +1,7 @@
 <?php
 namespace tests;
-use Ably\AblyRest;
-use Ably\Log;
+use Ably\PubSub\PubSubHttpClient;
+use Ably\PubSub\Log;
 
 require_once __DIR__ . '/factories/TestApp.php';
 
@@ -9,7 +9,7 @@ class LogTest extends \PHPUnit\Framework\TestCase {
 
     public static function tearDownAfterClass(): void {
         // ensure the logger is reset to default
-        $ably = new AblyRest( [
+        $ably = new PubSubHttpClient( [
             'key' => 'fake.key:totallyFake'
         ] );
     }
@@ -33,7 +33,7 @@ class LogTest extends \PHPUnit\Framework\TestCase {
                 $out .= $args[0] . "\n";
             },
         ];
-        $ably = new AblyRest( $opts );
+        $ably = new PubSubHttpClient( $opts );
 
         $this->logMessages();
 
@@ -58,7 +58,7 @@ class LogTest extends \PHPUnit\Framework\TestCase {
             },
         ];
 
-        $ably = new AblyRest( $opts );
+        $ably = new PubSubHttpClient( $opts );
         $this->logMessages();
         
         $this->assertIsInt( strpos($out, 'This is a test warning.'), 'Expected warning level to be logged.' );
@@ -80,7 +80,7 @@ class LogTest extends \PHPUnit\Framework\TestCase {
             },
         ];
 
-        $ably = new AblyRest( $opts );
+        $ably = new PubSubHttpClient( $opts );
         $this->logMessages();
         $this->assertFalse( $called, 'Log handler incorrectly called' );
     }

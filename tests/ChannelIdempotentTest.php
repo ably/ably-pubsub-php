@@ -1,10 +1,10 @@
 <?php
 namespace tests;
-use Ably\AblyRest;
-use Ably\Http;
-use Ably\Models\Message;
-use Ably\Exceptions\AblyRequestException;
-use Ably\Utils\Miscellaneous;
+use Ably\PubSub\PubSubHttpClient;
+use Ably\PubSub\Http;
+use Ably\PubSub\Models\Message;
+use Ably\PubSub\Exceptions\AblyRequestException;
+use Ably\PubSub\Utils\Miscellaneous;
 use MessagePack\MessagePack;
 use MessagePack\PackOptions;
 
@@ -33,7 +33,7 @@ class ChannelIdempotentTest extends \PHPUnit\Framework\TestCase {
     public static function setUpBeforeClass(): void {
         self::$testApp = new TestApp();
         self::$defaultOptions = self::$testApp->getOptions();
-        self::$ably = new AblyRest( array_merge( self::$defaultOptions, [
+        self::$ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
             'idempotentRestPublishing' => true,
         ] ) );
@@ -163,7 +163,7 @@ class ChannelIdempotentTest extends \PHPUnit\Framework\TestCase {
      * RSL1k4
      */
     public function testIdempotentLibraryGeneratedPublish() {
-        $ably = new AblyRest( array_merge( self::$defaultOptions, [
+        $ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
             'idempotentRestPublishing' => true,
             'httpClass' => 'tests\HttpMockIdempotent',

@@ -1,9 +1,9 @@
 <?php
 namespace tests;
-use Ably\AblyRest;
+use Ably\PubSub\PubSubHttpClient;
 require_once __DIR__ . '/factories/TestApp.php';
 
-class AblyRestRequestTest extends \PHPUnit\Framework\TestCase {
+class PubSubHttpClientRequestTest extends \PHPUnit\Framework\TestCase {
 
     protected static $testApp;
     protected static $defaultOptions;
@@ -12,7 +12,7 @@ class AblyRestRequestTest extends \PHPUnit\Framework\TestCase {
     public static function setUpBeforeClass(): void {
         self::$testApp = new TestApp();
         self::$defaultOptions = self::$testApp->getOptions();
-        self::$ably = new AblyRest( array_merge( self::$defaultOptions, [
+        self::$ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
         ] ) );
     }
@@ -25,7 +25,7 @@ class AblyRestRequestTest extends \PHPUnit\Framework\TestCase {
      * Batch publishes messages for given list of channels
      * RSC19
      * https://ably.com/docs/api/rest-api#batch-publish
-     * @throws \Ably\Exceptions\AblyRequestException
+     * @throws \Ably\PubSub\Exceptions\AblyRequestException
      */
     public function testBatchPublishMultipleChannelsUsingPostRequest() {
 

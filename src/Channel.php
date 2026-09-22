@@ -1,12 +1,12 @@
 <?php
-namespace Ably;
+namespace Ably\PubSub;
 
-use Ably\Exceptions\AblyException;
-use Ably\Models\ChannelOptions;
-use Ably\Models\Message;
-use Ably\Models\PaginatedResult;
-use Ably\Models\Status\ChannelDetails;
-use Ably\Utils\Stringifiable;
+use Ably\PubSub\Exceptions\AblyException;
+use Ably\PubSub\Models\ChannelOptions;
+use Ably\PubSub\Models\Message;
+use Ably\PubSub\Models\PaginatedResult;
+use Ably\PubSub\Models\Status\ChannelDetails;
+use Ably\PubSub\Utils\Stringifiable;
 use MessagePack\MessagePack;
 use MessagePack\PackOptions;
 
@@ -23,18 +23,18 @@ class Channel {
     private $ably;
     private $presence;
     /**
-     * @var \Ably\Models\ChannelOptions
+     * @var \Ably\PubSub\Models\ChannelOptions
      */
     public $options;
 
     /**
      * Constructor
-     * @param AblyRest $ably Ably API instance
+     * @param PubSubHttpClient $ably Ably API instance
      * @param string $name Channel's name
      * @param ChannelOptions|array|null $options Channel options (for encrypted channels)
      * @throws AblyException
      */
-    public function __construct( AblyRest $ably, $name, $options = [] ) {
+    public function __construct( PubSubHttpClient $ably, $name, $options = [] ) {
         $this->ably = $ably;
         $this->name = $name;
         $this->channelPath = "/channels/" . urlencode( $name );
@@ -57,13 +57,13 @@ class Channel {
     /**
      * Posts a message to this channel
      * @param mixed ... Either a Message, array of Message-s, or (string eventName, string data)
-     * @throws \Ably\Exceptions\AblyException
+     * @throws \Ably\PubSub\Exceptions\AblyException
      */
     public function __publish_request_body($first) {
         // Process arguments
         $messages = [];
 
-        if ( is_a( $first, 'Ably\Models\Message' ) ) { // single Message
+        if ( is_a( $first, 'Ably\PubSub\Models\Message' ) ) { // single Message
             $messages[] = $first;
         } else if ( is_array( $first ) ) { // array of Messages
             $messages = $first;
@@ -161,7 +161,7 @@ class Channel {
      * @return PaginatedResult
      */
     public function history( $params = [] ) {
-        return new PaginatedResult( $this->ably, 'Ably\Models\Message',
+        return new PaginatedResult( $this->ably, 'Ably\PubSub\Models\Message',
                                     $this->getCipherParams(),
                                     'GET', $this->getPath() . '/messages',
                                     $params );

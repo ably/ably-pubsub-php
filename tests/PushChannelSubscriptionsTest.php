@@ -1,9 +1,9 @@
 <?php
 namespace tests;
-use Ably\AblyRest;
-use Ably\Exceptions\AblyException;
-use Ably\Models\PushChannelSubscription;
-use Ably\Models\PaginatedResult;
+use Ably\PubSub\PubSubHttpClient;
+use Ably\PubSub\Exceptions\AblyException;
+use Ably\PubSub\Models\PushChannelSubscription;
+use Ably\PubSub\Models\PaginatedResult;
 
 require_once __DIR__ . '/factories/TestApp.php';
 require_once __DIR__ . '/Utils.php';
@@ -34,7 +34,7 @@ class PushChannelSubscriptionsTest extends \PHPUnit\Framework\TestCase {
     public static function setUpBeforeClass(): void {
         self::$testApp = new TestApp();
         self::$defaultOptions = self::$testApp->getOptions();
-        self::$ably = new AblyRest( array_merge( self::$defaultOptions, [
+        self::$ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
         ] ) );
     }

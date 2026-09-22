@@ -1,12 +1,12 @@
 <?php
 namespace tests;
-use Ably\AblyRest;
-use Ably\Channel;
-use Ably\Http;
-use Ably\Log;
-use Ably\Exceptions\AblyException;
-use Ably\Models\Message;
-use Ably\Utils\Crypto;
+use Ably\PubSub\PubSubHttpClient;
+use Ably\PubSub\Channel;
+use Ably\PubSub\Http;
+use Ably\PubSub\Log;
+use Ably\PubSub\Exceptions\AblyException;
+use Ably\PubSub\Models\Message;
+use Ably\PubSub\Utils\Crypto;
 use MessagePack\MessagePack;
 use MessagePack\PackOptions;
 
@@ -20,7 +20,7 @@ class ChannelMessagesTest extends \PHPUnit\Framework\TestCase {
     public static function setUpBeforeClass(): void {
         self::$testApp = new TestApp();
         self::$defaultOptions = self::$testApp->getOptions();
-        self::$ably = new AblyRest( array_merge( self::$defaultOptions, [
+        self::$ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
         ] ) );
     }
@@ -192,7 +192,7 @@ class ChannelMessagesTest extends \PHPUnit\Framework\TestCase {
             $messages[] = $msg;
         }
 
-        $ably = new AblyRest( array_merge( self::$defaultOptions, [
+        $ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
             'httpClass' => 'tests\HttpMockMsgCounter',
         ] ) );
@@ -327,7 +327,7 @@ class ChannelMessagesTest extends \PHPUnit\Framework\TestCase {
     public function testEncryptedMessageUnencryptedHistory() {
         $errorLogged = false;
 
-        $ably = new AblyRest( array_merge( self::$defaultOptions, [
+        $ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
             'logHandler' => function( $level, $args ) use ( &$errorLogged ) {
                 if ( $level == Log::ERROR ) {
@@ -378,7 +378,7 @@ class ChannelMessagesTest extends \PHPUnit\Framework\TestCase {
     public function testEncryptionKeyMismatch() {
         $errorLogged = false;
 
-        $ably = new AblyRest( array_merge( self::$defaultOptions, [
+        $ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
             'logHandler' => function( $level, $args ) use ( &$errorLogged ) {
                 if ( $level == Log::ERROR ) {
@@ -466,8 +466,8 @@ class ChannelMessagesTest extends \PHPUnit\Framework\TestCase {
     public function testEncodingInteroperabilityRawToAbly() {
         $fixture = json_decode( file_get_contents( __DIR__ . '/../ably-common/test-resources/messages-encoding.json' ) );
 
-        $defaultOpts = new \Ably\Models\ClientOptions( self::$defaultOptions );
-        $http = new \Ably\Http( $defaultOpts ); // initialize http class for raw requests with default timeouts
+        $defaultOpts = new \Ably\PubSub\Models\ClientOptions( self::$defaultOptions );
+        $http = new \Ably\PubSub\Http( $defaultOpts ); // initialize http class for raw requests with default timeouts
         $server = 'https://' . $defaultOpts->getPrimaryRestHost();
 
         $messages = [];
@@ -512,8 +512,8 @@ class ChannelMessagesTest extends \PHPUnit\Framework\TestCase {
     public function testEncodingInteroperabilityAblyToRaw() {
         $fixture = json_decode( file_get_contents( __DIR__ . '/../ably-common/test-resources/messages-encoding.json' ) );
 
-        $defaultOpts = new \Ably\Models\ClientOptions( self::$defaultOptions );
-        $http = new \Ably\Http( $defaultOpts ); // initialize http class for raw requests with default timeouts
+        $defaultOpts = new \Ably\PubSub\Models\ClientOptions( self::$defaultOptions );
+        $http = new \Ably\PubSub\Http( $defaultOpts ); // initialize http class for raw requests with default timeouts
         $server = 'https://' . $defaultOpts->getPrimaryRestHost();
 
         $messages = [];
@@ -552,7 +552,7 @@ class ChannelMessagesTest extends \PHPUnit\Framework\TestCase {
      * Test if null name and data elements are allowed when publishing messages
      */
     public function testNullData() {
-        $ably = new AblyRest( array_merge( self::$defaultOptions, [
+        $ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
             'httpClass' => 'tests\HttpSaveWrapper',
         ] ) );
