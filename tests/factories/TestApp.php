@@ -25,7 +25,7 @@ class TestApp {
 
         $settings = [];
 
-        $settings['environment'] = getenv( 'ABLY_ENV' ) ? : 'sandbox';
+        $settings['endpoint'] = getenv( 'ABLY_ENDPOINT' ) ? : 'nonprod:sandbox';
         $settings['useBinaryProtocol'] = getenv('PROTOCOL') !== 'json';
         //$settings['logLevel'] = Log::DEBUG;
 
@@ -33,7 +33,7 @@ class TestApp {
 
         $this->options = $settings;
 
-        $this->server = $clientOpts->getHostUrl($clientOpts->getPrimaryRestHost());
+        $this->server = $clientOpts->getHostUrl($clientOpts->getPrimaryDomain());
         $this->init();
 
         return $this;

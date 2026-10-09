@@ -219,7 +219,7 @@ class PubSubHttpClient {
             $hostUrl = $this->options->getHostUrl($host). $path;
             try {
                 $updatedHeaders = $mergedHeaders;
-                if ($host != $this->options->getPrimaryRestHost()) { // set hostHeader for fallback host (RSC15j)
+                if ($host != $this->options->getPrimaryDomain()) { // set hostHeader for fallback host (RSC15j)
                     $updatedHeaders[] = "Host: " . $host;
                 }
                 $response = $this->http->request( $method, $hostUrl, $updatedHeaders, $params );
