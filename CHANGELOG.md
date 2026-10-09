@@ -16,6 +16,10 @@ the full mapping table.
 - Clients are constructed through `Ably\PubSub\Server::createHttpClient()`, which declares the server side on the wire. It accepts everything the constructor accepted: an options array, an API key string, a token string, or a `ClientOptions` instance. A client constructed directly declares no side, and is rejected on accounts with monthly-active-user pricing enabled.
 - Removed `AblyRest::setAblyAgentHeader()` and `AblyRest::setLibraryFlavourString()`, replaced by the per-client `agents` client option.
 - Removed `ably-loader.php`; Composer's autoloader is the only supported install path.
+- Added the `endpoint` client option (REC1, REC2), which is now the only way to choose where the client connects. The default primary domain is `main.realtime.ably.net`, with fallback hosts `main.[a-e].fallback.ably-realtime.com`.
+- Removed the `environment` and `restHost` client options in favour of `endpoint`. They are now ignored if passed, so a client still setting `environment` connects to production.
+- Setting `port` or `tlsPort` no longer disables the default fallback hosts; a hostname `endpoint` does.
+- `ClientOptions::getPrimaryRestHost()` is now `getPrimaryDomain()`. `Defaults::$restHost`, `Defaults::$realtimeHost` and `Defaults::getEnvironmentFallbackHosts()` are replaced by `Defaults::$endpoint`, `Defaults::getPrimaryDomain()` and `Defaults::getEndpointFallbackHosts()`.
 - Removed the `demo/` Heroku application and its `Procfile`.
 - The minimum supported PHP version is now 8.1; the SDK is tested on 8.1 through 8.5.
 

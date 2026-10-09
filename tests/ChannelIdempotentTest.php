@@ -168,9 +168,9 @@ class ChannelIdempotentTest extends \PHPUnit\Framework\TestCase {
             'idempotentRestPublishing' => true,
             'httpClass' => 'tests\HttpMockIdempotent',
             'fallbackHosts' => [
-                self::$ably->options->getPrimaryRestHost(),
-                self::$ably->options->getPrimaryRestHost(),
-                self::$ably->options->getPrimaryRestHost(),
+                self::$ably->options->getPrimaryDomain(),
+                self::$ably->options->getPrimaryDomain(),
+                self::$ably->options->getPrimaryDomain(),
             ],
         ] ) );
 

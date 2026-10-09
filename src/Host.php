@@ -8,7 +8,7 @@ class Host {
 
     public function __construct($clientOptions)
     {
-        $this->primaryHost = $clientOptions->getPrimaryRestHost();
+        $this->primaryHost = $clientOptions->getPrimaryDomain();
         $this->fallbackHosts = $clientOptions->getFallbackHosts();
         $this->hostCache = new HostCache($clientOptions->fallbackRetryTimeout);
     }
