@@ -1,8 +1,8 @@
 <?php
-namespace Ably;
+namespace Ably\PubSub;
 
-use Ably\Models\PaginatedResult;
-use Ably\Models\PushChannelSubscription;
+use Ably\PubSub\Models\PaginatedResult;
+use Ably\PubSub\Models\PushChannelSubscription;
 
 class PushChannelSubscriptions {
 
@@ -10,9 +10,9 @@ class PushChannelSubscriptions {
 
     /**
      * Constructor
-     * @param AblyRest $ably Ably API instance
+     * @param PubSubHttpClient $ably Ably API instance
      */
-    public function __construct( AblyRest $ably ) {
+    public function __construct( PubSubHttpClient $ably ) {
         $this->ably = $ably;
     }
 
@@ -39,7 +39,7 @@ class PushChannelSubscriptions {
      */
     public function list_ (array $params = []) {
         $path = '/push/channelSubscriptions';
-        return new PaginatedResult( $this->ably, 'Ably\Models\PushChannelSubscription',
+        return new PaginatedResult( $this->ably, 'Ably\PubSub\Models\PushChannelSubscription',
                                     $cipher = false, 'GET', $path, $params );
     }
 

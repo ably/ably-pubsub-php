@@ -1,8 +1,8 @@
 <?php
-namespace Ably\Models;
+namespace Ably\PubSub\Models;
 
-use Ably\Defaults;
-use Ably\Log;
+use Ably\PubSub\Defaults;
+use Ably\PubSub\Log;
 
 /**
  * Client library options
@@ -16,14 +16,14 @@ class ClientOptions extends AuthOptions {
 
     /**
      * integer a number controlling the verbosity of the output from 1 (minimum, errors only) to 4 (most verbose);
-     * @see \Ably\Log
+     * @see \Ably\PubSub\Log
      */
     public $logLevel = Log::WARNING;
 
     /**
      * @var function|null a function to handle each line of log output. If handler is not specified, STDOUT is used.
      * Note that the log level and log handler have global scope in the library and will thus not act independently between library instances when multiple library instances are existing concurrently.
-     * @see \Ably\Log
+     * @see \Ably\PubSub\Log
      */
     public $logHandler;
 
@@ -35,10 +35,14 @@ class ClientOptions extends AuthOptions {
     public $useBinaryProtocol = true;
 
     /**
-     * @var string alternate server domain
-     * For development environments only.
+     * @var string|null where the client connects (REC1), default `main`.
+     * One of: a routing policy id such as `main` or a dedicated cluster id,
+     * which resolves to `[id].realtime.ably.net`; `nonprod:[id]`, which
+     * resolves to `[id].realtime.ably-nonprod.net`; or a hostname (anything
+     * containing `.` or `::`, or `localhost`), which is used as given and has
+     * no default fallback hosts.
      */
-    public $restHost;
+    public $endpoint;
 
     /**
      * @var integer Allows a non-default Ably non-TLS port to be used.
@@ -53,24 +57,18 @@ class ClientOptions extends AuthOptions {
     public $tlsPort;
 
     /**
-     * @var string optional prefix to be prepended to $restHost
-     * Example: 'sandbox' -> 'sandbox-rest.ably.io'
-     */
-    public $environment;
-
-    /**
-     * @var string[] fallback hosts, used when connection to default host fails, populated automatically
+     * @var string[] fallback hosts, used when connection to the primary domain fails; when empty, derived from $endpoint
      */
     public $fallbackHosts = [];
 
     /**
      * @var integer – default 600000 (10 minutes) the period in milliseconds
-     * before HTTP requests are retried against the default endpoint
+     * before HTTP requests are retried against the primary domain
      */
     public $fallbackRetryTimeout = 600000;
 
     /**
-     * @var \Ably\Models\TokenParams defaultTokenParams – overrides the client library defaults described in TokenParams
+     * @var \Ably\PubSub\Models\TokenParams defaultTokenParams – overrides the client library defaults described in TokenParams
      */
     public $defaultTokenParams;
 
@@ -99,7 +97,7 @@ class ClientOptions extends AuthOptions {
      * @var string a class that should be used for making HTTP connections
      * To allow mocking in tests.
      */
-    public $httpClass = 'Ably\Http';
+    public $httpClass = 'Ably\PubSub\Http';
 
     /**
      * @var bool defaults to false for clients with version < 1.2, otherwise true
@@ -110,38 +108,68 @@ class ClientOptions extends AuthOptions {
      * @var string a class that should be used for Auth
      * To allow mocking in tests.
      */
-    public $authClass = 'Ably\Auth';
+    public $authClass = 'Ably\PubSub\Auth';
 
+    /**
+     * Additional agent entries appended to the `Ably-Agent` request header.
+     *
+     * This should only be used by Ably-authored SDKs and wrappers layered on
+     * top of this package. An identifier used here has to be registered in
+     * the ably-common agents registry first:
+     * https://github.com/ably/ably-common/blob/main/protocol/agents.json
+     *
+     * Keys are agent identifiers, values are agent versions. A `null` or
+     * empty-string value renders the identifier as a bare flag carrying no
+     * version, which is how the registry declares runtime flags such as
+     * `browser` and `ably-pubsub-server`.
+     *
+     * @var array<string, string|null>
+     */
+    public $agents = [];
 
-    private function isProductionEnvironment() {
-        return empty($this->environment) || strcasecmp($this->environment, "production") == 0;
-    }
+    /**
+     * Normalises the single argument that the client constructor and the
+     * factory door both accept into something ClientOptions can be built from.
+     *
+     * A bare string is an API key when it contains a colon and a token
+     * otherwise. An array or an existing ClientOptions instance passes through
+     * unchanged, so an argument of any other type reaches the constructor and
+     * raises the constructor's own error rather than a vaguer failure later.
+     *
+     * @param \Ably\PubSub\Models\ClientOptions|array|string $options
+     * @return \Ably\PubSub\Models\ClientOptions|array
+     */
+    public static function normalizeConstructorArgument( $options ) {
+        if ( is_string( $options ) ) {
+            return strpos( $options, ':' ) === false
+                ? [ 'token' => $options ]
+                : [ 'key' => $options ];
+        }
 
-    private function isDefaultPort() {
-        return $this->tls ? $this->tlsPort == Defaults::$tlsPort : $this->port == Defaults::$port;
+        return $options;
     }
 
     private function activePort() {
         return $this->tls ? $this->tlsPort : $this->port;
     }
 
-    private function isDefaultRestHost() {
-        return $this->restHost == Defaults::$restHost;
+    /**
+     * The domain both REST requests and, in SDKs that have one, the realtime
+     * connection use (REC1, RSC25).
+     */
+    public function getPrimaryDomain() {
+        return Defaults::getPrimaryDomain($this->endpoint);
     }
 
-    public function getPrimaryRestHost() {
-        if ($this->isDefaultRestHost()) {
-            return $this->isProductionEnvironment() ? $this->restHost : $this->environment.'-'.$this->restHost;
-        }
-        return $this->restHost;
-    }
-
+    /**
+     * An explicit, non-empty `fallbackHosts` replaces the defaults (REC2a2);
+     * otherwise the defaults are derived from `endpoint` (REC2c).
+     */
     public function getFallbackHosts() {
-        $fallbacks = $this->fallbackHosts ?? [];
-        if (empty($this->fallbackHosts) && $this->isDefaultRestHost() && $this->isDefaultPort()) {
-            $fallbacks = $this->isProductionEnvironment() ? Defaults::$fallbackHosts : Defaults::getEnvironmentFallbackHosts($this->environment);
+        if (!empty($this->fallbackHosts)) {
+            return $this->fallbackHosts;
         }
-        return $fallbacks;
+        return Defaults::getEndpointFallbackHosts($this->endpoint);
     }
 
     public function getHostUrl($host) {
@@ -150,8 +178,8 @@ class ClientOptions extends AuthOptions {
 
     public function __construct( $options = [] ) {
         parent::__construct( $options );
-        if (empty($this->restHost)) {
-            $this->restHost = Defaults::$restHost;
+        if (empty($this->endpoint)) {
+            $this->endpoint = Defaults::$endpoint;
         }
         if (empty($this->port)) {
             $this->port = Defaults::$port;

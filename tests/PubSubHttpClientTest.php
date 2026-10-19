@@ -1,16 +1,16 @@
 <?php
 namespace tests;
-use Ably\AblyRest;
-use Ably\Defaults;
-use Ably\Exceptions\AblyRequestException;
-use Ably\Http;
-use Ably\Models\ClientOptions;
-use Ably\Models\TokenDetails;
-use Ably\Utils\Miscellaneous;
+use Ably\PubSub\PubSubHttpClient;
+use Ably\PubSub\Defaults;
+use Ably\PubSub\Exceptions\AblyRequestException;
+use Ably\PubSub\Http;
+use Ably\PubSub\Models\ClientOptions;
+use Ably\PubSub\Models\TokenDetails;
+use Ably\PubSub\Utils\Miscellaneous;
 
 require_once __DIR__ . '/factories/TestApp.php';
 
-class AblyRestTest extends \PHPUnit\Framework\TestCase {
+class PubSubHttpClientTest extends \PHPUnit\Framework\TestCase {
 
     use AssertsRegularExpressions;
 
@@ -31,7 +31,7 @@ class AblyRestTest extends \PHPUnit\Framework\TestCase {
      */
     public function testInitLibWithKeyString() {
         $key = 'fake.key:veryFake';
-        $ably = new AblyRest( $key );
+        $ably = new PubSubHttpClient( $key );
         $this->assertTrue( $ably->auth->isUsingBasicAuth(), 'Expected basic auth to be used' );
     }
 
@@ -40,7 +40,7 @@ class AblyRestTest extends \PHPUnit\Framework\TestCase {
      */
     public function testInitLibWithKeyOption() {
         $key = 'fake.key:veryFake';
-        $ably = new AblyRest( ['key' => $key ] );
+        $ably = new PubSubHttpClient( ['key' => $key ] );
         $this->assertTrue( $ably->auth->isUsingBasicAuth(), 'Expected basic auth to be used' );
     }
 
@@ -49,7 +49,7 @@ class AblyRestTest extends \PHPUnit\Framework\TestCase {
      */
     public function testInitLibWithTokenString() {
         $token = 'fake_token'; // token string never contains a colon
-        $ably = new AblyRest( $token );
+        $ably = new PubSubHttpClient( $token );
         $this->assertFalse( $ably->auth->isUsingBasicAuth(), 'Expected token auth to be used' );
     }
 
@@ -57,7 +57,7 @@ class AblyRestTest extends \PHPUnit\Framework\TestCase {
      * Init library with a token string in options
      */
     public function testInitLibWithTokenOption() {
-        $ably = new AblyRest( [
+        $ably = new PubSubHttpClient( [
             'token' => "this_is_not_really_a_token",
         ] );
 
@@ -68,7 +68,7 @@ class AblyRestTest extends \PHPUnit\Framework\TestCase {
      * Init library with a tokenDetails in options
      */
     public function testInitLibWithTokenDetailsOption() {
-        $ably = new AblyRest( [
+        $ably = new PubSubHttpClient( [
             'tokenDetails' => new TokenDetails( "this_is_not_really_a_token" ),
         ] );
 
@@ -76,15 +76,16 @@ class AblyRestTest extends \PHPUnit\Framework\TestCase {
     }
 
     /**
-     * Init library with a specified host
+     * Init library with a hostname endpoint
+     * @testdox REC1b2
      */
     public function testInitLibWithSpecifiedHost() {
         $opts = [
             'key' => 'fake.key:veryFake',
-            'restHost'  => 'some.other.host',
+            'endpoint'  => 'some.other.host',
             'httpClass' => 'tests\HttpMockInitTest',
         ];
-        $ably = new AblyRest( $opts );
+        $ably = new PubSubHttpClient( $opts );
         $ably->time(); // make a request
         $this->assertMatchesRegularExpression( '/^https?:\/\/some\.other\.host/', $ably->http->lastUrl, 'Unexpected host mismatch' );
     }
@@ -95,62 +96,63 @@ class AblyRestTest extends \PHPUnit\Framework\TestCase {
     public function testInitLibWithSpecifiedPort() {
         $opts = [
             'key' => 'fake.key:veryFake',
-            'restHost'  => 'some.other.host',
+            'endpoint'  => 'some.other.host',
             'tlsPort' => 999,
             'httpClass' => 'tests\HttpMockInitTest',
         ];
-        $ably = new AblyRest( $opts );
+        $ably = new PubSubHttpClient( $opts );
         $ably->time(); // make a request
         $this->assertStringContainsString(
-            'https://' . $opts['restHost'] . ':' . $opts['tlsPort'],
+            'https://' . $opts['endpoint'] . ':' . $opts['tlsPort'],
             $ably->http->lastUrl,
             'Unexpected host/port mismatch'
         );
 
         $opts = [
             'token' => 'fakeToken',
-            'restHost'  => 'some.other.host',
+            'endpoint'  => 'some.other.host',
             'port' => 999,
             'tls' => false,
             'httpClass' => 'tests\HttpMockInitTest',
         ];
-        $ably = new AblyRest( $opts );
+        $ably = new PubSubHttpClient( $opts );
         $ably->time(); // make a request
         $this->assertStringContainsString(
-            'http://' . $opts['restHost'] . ':' . $opts['port'],
+            'http://' . $opts['endpoint'] . ':' . $opts['port'],
             $ably->http->lastUrl,
             'Unexpected host/port mismatch'
         );
     }
 
     /**
-     * Init library with specified environment
+     * Init library with a nonprod routing policy endpoint
+     * @testdox REC1b3
      */
-    public function testInitLibWithSpecifiedEnv() {
-        $ably = new AblyRest( [
+    public function testInitLibWithNonprodEndpoint() {
+        $ably = new PubSubHttpClient( [
             'key' => 'fake.key:veryFake',
-            'environment'  => 'sandbox',
+            'endpoint'  => 'nonprod:sandbox',
             'httpClass' => 'tests\HttpMockInitTest',
         ] );
         $ably->time(); // make a request
-        $this->assertEquals( 'https://sandbox-rest.ably.io:443/time', $ably->http->lastUrl, 'Unexpected host mismatch' );
+        $this->assertEquals( 'https://sandbox.realtime.ably-nonprod.net:443/time', $ably->http->lastUrl, 'Unexpected host mismatch' );
     }
 
     /**
-     * Verify encrypted defaults to true, makes a request to https://rest.ably.io/...
+     * Verify encrypted defaults to true, makes a request to https://main.realtime.ably.net/...
      */
     public function testTLSDefaultIsTrue() {
         $opts = [
             'key' => 'fake.key:veryFake',
             'httpClass' => 'tests\HttpMockInitTest',
         ];
-        $ably = new AblyRest( $opts );
+        $ably = new PubSubHttpClient( $opts );
         $ably->time(); // make a request
-        $this->assertMatchesRegularExpression( '/^https:\/\/rest\.ably\.io/', $ably->http->lastUrl, 'Unexpected scheme/url mismatch' );
+        $this->assertMatchesRegularExpression( '/^https:\/\/main\.realtime\.ably\.net/', $ably->http->lastUrl, 'Unexpected scheme/url mismatch' );
     }
 
     /**
-     * Verify encrypted can be set to false, makes a request to http://rest.ably.io/...
+     * Verify encrypted can be set to false, makes a request to http://main.realtime.ably.net/...
      */
     public function testTLSCanBeFalse() {
         $opts = [
@@ -158,13 +160,13 @@ class AblyRestTest extends \PHPUnit\Framework\TestCase {
             'httpClass' => 'tests\HttpMockInitTest',
             'tls' => false,
         ];
-        $ably = new AblyRest( $opts );
+        $ably = new PubSubHttpClient( $opts );
         $ably->time(); // make a request
-        $this->assertMatchesRegularExpression( '/^http:\/\/rest\.ably\.io/', $ably->http->lastUrl, 'Unexpected scheme/url mismatch' );
+        $this->assertMatchesRegularExpression( '/^http:\/\/main\.realtime\.ably\.net/', $ably->http->lastUrl, 'Unexpected scheme/url mismatch' );
     }
 
     /**
-     * Verify that connection is encrypted when set to true explicitly, makes a request to https://rest.ably.io/...
+     * Verify that connection is encrypted when set to true explicitly, makes a request to https://main.realtime.ably.net/...
      */
     public function testTLSExplicitTrue() {
         $opts = [
@@ -172,9 +174,9 @@ class AblyRestTest extends \PHPUnit\Framework\TestCase {
             'httpClass' => 'tests\HttpMockInitTest',
             'tls' => true,
         ];
-        $ably = new AblyRest( $opts );
+        $ably = new PubSubHttpClient( $opts );
         $ably->time(); // make a request
-        $this->assertMatchesRegularExpression( '/^https:\/\/rest\.ably\.io/', $ably->http->lastUrl, 'Unexpected scheme/url mismatch' );
+        $this->assertMatchesRegularExpression( '/^https:\/\/main\.realtime\.ably\.net/', $ably->http->lastUrl, 'Unexpected scheme/url mismatch' );
     }
 
 
@@ -189,7 +191,7 @@ class AblyRestTest extends \PHPUnit\Framework\TestCase {
             'httpMaxRetryCount' => 2,
         ];
 
-        $ably = new AblyRest( $opts );
+        $ably = new PubSubHttpClient( $opts );
         try {
             $ably->time(); // make a request
             $this->fail('Expected the request to fail');
@@ -208,15 +210,15 @@ class AblyRestTest extends \PHPUnit\Framework\TestCase {
             'httpClass' => 'tests\HttpMockInitTestTimeout',
             'httpMaxRetryCount' => 5,
         ];
-        $ably = new AblyRest( $opts );
+        $ably = new PubSubHttpClient( $opts );
         try {
             $ably->time(); // make a request
             $this->fail('Expected the request to fail');
         } catch(AblyRequestException $e) {
             $this->assertCount(6, $ably->http->visitedHosts);
-            $this->assertEquals( 'rest.ably.io' , $ably->http->visitedHosts[0],'Expected to try primary restHost first' );
+            $this->assertEquals( 'main.realtime.ably.net' , $ably->http->visitedHosts[0],'Expected to try primary domain first' );
 
-            $expectedFallbackHosts = array_merge( [ 'rest.ably.io' ], Defaults::$fallbackHosts );
+            $expectedFallbackHosts = array_merge( [ 'main.realtime.ably.net' ], Defaults::$fallbackHosts );
             $this->assertNotEquals( $expectedFallbackHosts, $ably->http->visitedHosts,'Expected to have fallback hosts randomized' );
 
             sort($expectedFallbackHosts);
@@ -227,25 +229,25 @@ class AblyRestTest extends \PHPUnit\Framework\TestCase {
     }
 
     /**
-     * When using custom environment, should use custom env. fallback hosts
-     * @testdox RSC15b1,RSC15g2
+     * When using a routing policy endpoint, should use that endpoint's fallback hosts
+     * @testdox REC1b4, REC2c4
      */
-    public function testEnvFallbackHosts() {
+    public function testEndpointFallbackHosts() {
         $opts = [
             'key' => 'fake.key:veryFake',
             'httpClass' => 'tests\HttpMockInitTestTimeout',
             'httpMaxRetryCount' => 5,
-            'environment' => 'alpha'
+            'endpoint' => 'alpha'
         ];
-        $ably = new AblyRest( $opts );
+        $ably = new PubSubHttpClient( $opts );
         try {
             $ably->time(); // make a request
             $this->fail('Expected the request to fail');
         } catch(AblyRequestException $e) {
             $this->assertCount(6, $ably->http->visitedHosts);
-            $this->assertEquals( 'alpha-rest.ably.io' , $ably->http->visitedHosts[0],'Expected to try primary restHost first' );
+            $this->assertEquals( 'alpha.realtime.ably.net' , $ably->http->visitedHosts[0],'Expected to try primary domain first' );
 
-            $expectedFallbackHosts = array_merge( [ 'alpha-rest.ably.io' ], Defaults::getEnvironmentFallbackHosts('alpha'));
+            $expectedFallbackHosts = array_merge( [ 'alpha.realtime.ably.net' ], Defaults::getEndpointFallbackHosts('alpha'));
             $this->assertNotEquals( $expectedFallbackHosts, $ably->http->visitedHosts,'Expected to have fallback hosts randomized' );
 
             sort($expectedFallbackHosts);
@@ -263,10 +265,10 @@ class AblyRestTest extends \PHPUnit\Framework\TestCase {
         $opts = [
             'key' => 'fake.key:veryFake',
             'httpClass' => 'tests\HttpMockInitTestTimeout',
-            'restHost' => 'custom.host.com',
+            'endpoint' => 'custom.host.com',
             'fallbackHosts' => [],
         ];
-        $ably = new AblyRest( $opts );
+        $ably = new PubSubHttpClient( $opts );
         try {
             $ably->time(); // make a request
             $this->fail('Expected the request to fail');
@@ -277,7 +279,7 @@ class AblyRestTest extends \PHPUnit\Framework\TestCase {
     }
 
     /**
-     * Verify that custom restHost and custom fallbackHosts are working
+     * Verify that a hostname endpoint and custom fallbackHosts are working
      * @testdox RSC15b2, RSC15g1
      */
     public function testCustomHostAndFallbacks() {
@@ -287,7 +289,7 @@ class AblyRestTest extends \PHPUnit\Framework\TestCase {
             'third-fallback.custom.com',
         ];
         $defaultOpts = new ClientOptions([
-            'restHost' => 'rest.custom.com',
+            'endpoint' => 'rest.custom.com',
             'fallbackHosts' => $customFallbacks,
         ]);
 
@@ -296,15 +298,15 @@ class AblyRestTest extends \PHPUnit\Framework\TestCase {
             'httpClass' => 'tests\HttpMockInitTestTimeout',
             'httpMaxRetryCount' => 3,
         ]);
-        $ably = new AblyRest( $opts );
+        $ably = new PubSubHttpClient( $opts );
         try {
             $ably->time(); // make a request
             $this->fail('Expected the request to fail');
         } catch(AblyRequestException $e) {
             $this->assertCount(4, $ably->http->visitedHosts);
-            $this->assertEquals( 'rest.custom.com' , $ably->http->visitedHosts[0],'Expected to try primary restHost first' );
+            $this->assertEquals( 'rest.custom.com' , $ably->http->visitedHosts[0],'Expected to try primary domain first' );
 
-            $expectedFallbackHosts = array_merge( [ $defaultOpts->restHost ], $customFallbacks);
+            $expectedFallbackHosts = array_merge( [ $defaultOpts->getPrimaryDomain() ], $customFallbacks);
             sort($expectedFallbackHosts);
             $actualVisitedHosts = $ably->http->visitedHosts; // copied by value;
             sort($actualVisitedHosts);
@@ -323,7 +325,7 @@ class AblyRestTest extends \PHPUnit\Framework\TestCase {
             'httpClass' => 'tests\HttpMockInitTestTimeout',
         ];
 
-        $ably = new AblyRest( $opts );
+        $ably = new PubSubHttpClient( $opts );
         $ably->http->httpErrorCode = 401;
         $ably->http->errorCode = 40101; // auth error
 
@@ -332,21 +334,22 @@ class AblyRestTest extends \PHPUnit\Framework\TestCase {
             $this->fail('Expected the request to fail');
         } catch(AblyRequestException $e) {
             $this->assertCount(1, $ably->http->visitedHosts);
-            $this->assertEquals( [ 'rest.ably.io' ], $ably->http->visitedHosts, 'Expected to have tried only the default host' );
+            $this->assertEquals( [ 'main.realtime.ably.net' ], $ably->http->visitedHosts, 'Expected to have tried only the default host' );
         }
     }
 
     /**
-     * Verify that default fallback hosts are NOT used when using a custom host
-     * @testdox RSC15k
+     * Verify that default fallback hosts are NOT used with a hostname endpoint,
+     * so a qualifying error fails immediately
+     * @testdox RSC15k, REC2c2, RSC15m
      */
     public function testNoFallbackOnCustomHost() {
         $opts = [
             'key' => 'fake.key:veryFake',
             'httpClass' => 'tests\HttpMockInitTestTimeout',
-            'restHost' => 'custom.host.com',
+            'endpoint' => 'custom.host.com',
         ];
-        $ably = new AblyRest( $opts );
+        $ably = new PubSubHttpClient( $opts );
         try {
             $ably->time(); // make a request
             $this->fail('Expected the request to fail');
@@ -366,7 +369,7 @@ class AblyRestTest extends \PHPUnit\Framework\TestCase {
             'httpClass' => 'tests\HttpMockInitTestTimeout',
             'httpMaxRetryCount' => 5,
         ];
-        $ably = new AblyRest( $opts );
+        $ably = new PubSubHttpClient( $opts );
         $ably->http->hostFailures = 3;
         $data = $ably->time(); // make a request
 
@@ -385,12 +388,12 @@ class AblyRestTest extends \PHPUnit\Framework\TestCase {
             'third-fallback.custom.com',
         ];
         $opts = new ClientOptions([
-            'restHost' => 'rest.custom.com',
+            'endpoint' => 'rest.custom.com',
             'fallbackHosts' => $customFallbacks,
             'key' => 'fake.key:veryFake',
             'httpClass' => 'tests\HttpMockInitTestTimeout'
         ]);
-        $ably = new AblyRest( $opts );
+        $ably = new PubSubHttpClient( $opts );
         try {
             $ably->time(); // make a request
             $this->fail('Expected the request to fail');
@@ -408,46 +411,46 @@ class AblyRestTest extends \PHPUnit\Framework\TestCase {
      */
     public function testCachedFallback() {
         $fallbackCacheTimeoutInMs = 1999;
-        $ably = new AblyRest( array_merge( self::$defaultOptions, [
+        $ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
             'fallbackRetryTimeout' => $fallbackCacheTimeoutInMs,
             'httpClass' => 'tests\HttpMockCachedFallback',
-            'restHost' => 'custom.host.com',
+            'endpoint' => 'custom.host.com',
             'fallbackHosts' => [
                 'fallback1',
-                'c.ably-realtime.com', // valid fallback host
+                'main.c.fallback.ably-realtime.com', // valid fallback host
                 'fallback2',
             ],
         ]));
 
         $ably->time();
-        $this->assertEquals("c.ably-realtime.com", $ably->host->getPreferredHost()); // check for cached host
+        $this->assertEquals("main.c.fallback.ably-realtime.com", $ably->host->getPreferredHost()); // check for cached host
         $this->assertGreaterThanOrEqual(1, $ably->http->fallbackRetries );
         $ably->http->resetRetries();
 
         $ably->time();
         $ably->time();
-        $this->assertEquals("c.ably-realtime.com", $ably->host->getPreferredHost()); // check for cached host
+        $this->assertEquals("main.c.fallback.ably-realtime.com", $ably->host->getPreferredHost()); // check for cached host
         $this->assertEquals( 0, $ably->http->fallbackRetries); // zero retries since cached fallback is used
 
         sleep( 2); // expire cached host
 
         $ably->time();
-        $this->assertEquals("c.ably-realtime.com", $ably->host->getPreferredHost()); // check for cached host
+        $this->assertEquals("main.c.fallback.ably-realtime.com", $ably->host->getPreferredHost()); // check for cached host
         $this->assertGreaterThanOrEqual( 1, $ably->http->fallbackRetries );
     }
 
     /**
      * Verify accuracy of time (to within 2 seconds of actual time)
      *
-     * RSC16 RestClient#time function sends a get request to rest.ably.io/time
+     * RSC16 PubSubHttpClient#time function sends a get request to main.realtime.ably.net/time
      * and returns the server time in milliseconds since epoch
      */
     public function testTimeAndAccuracy() {
         $opts = [
             'key' => 'fake.key:veryFake',
         ];
-        $ably = new AblyRest( $opts );
+        $ably = new PubSubHttpClient( $opts );
 
         $time = $ably->time();
         $this->assertIsInt( $time );
@@ -465,7 +468,7 @@ class AblyRestTest extends \PHPUnit\Framework\TestCase {
         $opts = [
             'key' => 'fake.key:veryFake',
         ];
-        $ably = new AblyRest( $opts );
+        $ably = new PubSubHttpClient( $opts );
         $this->assertTrue($ably ->hasActiveInternetConnection());
     }
 
@@ -473,9 +476,9 @@ class AblyRestTest extends \PHPUnit\Framework\TestCase {
      * Verify that time fails without valid host
      */
     public function testTimeFailsWithInvalidHost() {
-        $ablyInvalidHost = new AblyRest( [
+        $ablyInvalidHost = new PubSubHttpClient( [
             'key' => 'fake.key:veryFake',
-            'restHost' => 'this.host.does.not.exist',
+            'endpoint' => 'this.host.does.not.exist',
         ]);
 
         $this->expectException(AblyRequestException::class);
@@ -487,19 +490,19 @@ class AblyRestTest extends \PHPUnit\Framework\TestCase {
      * Connection/open timeout not reliably testable.
      */
     public function testHttpTimeout() {
-        $ably = new AblyRest( [
+        $ably = new PubSubHttpClient( [
             'key' => 'fake.key:veryFake',
         ]);
 
-        $ablyTimeout = new AblyRest( [
+        $ablyTimeout = new PubSubHttpClient( [
             'key' => 'fake.key:veryFake',
             'httpRequestTimeout' => 20, // 20 ms
         ]);
 
-        $ably->http->get('https://rest.ably.io/time'); // should work
+        $ably->http->get('https://main.realtime.ably.net/time'); // should work
         $this->expectException(AblyRequestException::class);
         $this->expectExceptionCode(50003);
-        $ablyTimeout->http->get('https://rest.ably.io/time'); // guaranteed to take more than 20 ms
+        $ablyTimeout->http->get('https://main.realtime.ably.net/time'); // guaranteed to take more than 20 ms
     }
 }
 
@@ -564,7 +567,7 @@ class HttpMockCachedFallback extends Http {
     }
 
     public function request( $method, $url, $headers = [], $params = [] ) {
-        if ( parse_url($url, PHP_URL_HOST) == "c.ably-realtime.com" ) { // cache specific host
+        if ( parse_url($url, PHP_URL_HOST) == "main.c.fallback.ably-realtime.com" ) { // cache specific host
             return parent::request($method, $url, $headers, $params);
         }
         $this->fallbackRetries++;
