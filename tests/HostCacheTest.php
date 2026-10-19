@@ -1,7 +1,6 @@
 <?php
 namespace tests;
 
-use Ably\PubSub\Defaults;
 use Ably\PubSub\HostCache;
 
 /**
@@ -14,8 +13,8 @@ class HostCacheTest extends \PHPUnit\Framework\TestCase {
      */
     public function testHost() {
         $hostCache = new HostCache(3000);
-        $hostCache->put(Defaults::$restHost);
-        self::assertEquals("rest.ably.io", $hostCache->get());
+        $hostCache->put("main.realtime.ably.net");
+        self::assertEquals("main.realtime.ably.net", $hostCache->get());
     }
 
     /**
@@ -23,7 +22,7 @@ class HostCacheTest extends \PHPUnit\Framework\TestCase {
      */
     public function testExpiredHost() {
         $hostCache = new HostCache(999);
-        $hostCache->put(Defaults::$restHost);
+        $hostCache->put("main.realtime.ably.net");
         sleep(1);
         self::assertEquals("", $hostCache->get());
     }
