@@ -1,6 +1,6 @@
 <?php
 namespace tests;
-use Ably\AblyRest;
+use Ably\PubSub\PubSubHttpClient;
 
 require_once __DIR__ . '/factories/TestApp.php';
 
@@ -17,7 +17,7 @@ class AppStatsTest extends \PHPUnit\Framework\TestCase {
     public static function setUpBeforeClass(): void {
         self::$testApp = new TestApp();
         self::$defaultOptions = self::$testApp->getOptions();
-        self::$ably = new AblyRest( array_merge( self::$defaultOptions, [
+        self::$ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
         ] ) );
 
@@ -67,7 +67,7 @@ class AppStatsTest extends \PHPUnit\Framework\TestCase {
      * Check if stats are automatically populated by zeroes
      */
     public function testStatsDefaultValues() {
-        $stats = new \Ably\Models\Stats();
+        $stats = new \Ably\PubSub\Models\Stats();
         $this->assertTrue( $this->iterateObjectCheck0( $stats ), 'Expected newly created Stats to have zero values.' );
     }
 

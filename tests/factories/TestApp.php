@@ -1,8 +1,8 @@
 <?php
 namespace tests;
-use Ably\AblyRest;
-use Ably\Log;
-use Ably\Models\ClientOptions;
+use Ably\PubSub\PubSubHttpClient;
+use Ably\PubSub\Log;
+use Ably\PubSub\Models\ClientOptions;
 use \stdClass;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
@@ -25,7 +25,7 @@ class TestApp {
 
         $settings = [];
 
-        $settings['environment'] = getenv( 'ABLY_ENV' ) ? : 'sandbox';
+        $settings['endpoint'] = getenv( 'ABLY_ENDPOINT' ) ? : 'nonprod:sandbox';
         $settings['useBinaryProtocol'] = getenv('PROTOCOL') !== 'json';
         //$settings['logLevel'] = Log::DEBUG;
 
@@ -33,7 +33,7 @@ class TestApp {
 
         $this->options = $settings;
 
-        $this->server = $clientOpts->getHostUrl($clientOpts->getPrimaryRestHost());
+        $this->server = $clientOpts->getHostUrl($clientOpts->getPrimaryDomain());
         $this->init();
 
         return $this;
@@ -127,7 +127,9 @@ class TestApp {
             var_dump(curl_error($ch));  // Prints curl request error if exists
         }
 
-        curl_close ($ch);
+        // curl_close() has no effect since PHP 8.0 and is deprecated since 8.5;
+        // the handle is released when $ch goes out of scope. The floor is 8.1.
+        unset($ch);
 
         if ($this->debugRequests) {
             var_dump($raw);

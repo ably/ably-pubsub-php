@@ -1,7 +1,7 @@
 <?php
-namespace Ably;
+namespace Ably\PubSub;
 
-use Ably\Models\PaginatedResult;
+use Ably\PubSub\Models\PaginatedResult;
 
 class Presence {
 
@@ -10,10 +10,10 @@ class Presence {
 
     /**
      * Constructor
-     * @param AblyRest $ably Ably API instance
+     * @param PubSubHttpClient $ably Ably API instance
      * @param Channel $channel Associated channel
      */
-    public function __construct( AblyRest $ably, Channel $channel ) {
+    public function __construct( PubSubHttpClient $ably, Channel $channel ) {
         $this->ably = $ably;
         $this->channel = $channel;
     }
@@ -24,7 +24,7 @@ class Presence {
      * @return PaginatedResult
      */
     public function get( $params = [] ) {
-        return new PaginatedResult( $this->ably, 'Ably\Models\PresenceMessage', $this->channel->getCipherParams(), 'GET', $this->channel->getPath() . '/presence', $params );
+        return new PaginatedResult( $this->ably, 'Ably\PubSub\Models\PresenceMessage', $this->channel->getCipherParams(), 'GET', $this->channel->getPath() . '/presence', $params );
     }
 
     /**
@@ -33,6 +33,6 @@ class Presence {
      * @return PaginatedResult
      */
     public function history( $params = [] ) {
-        return new PaginatedResult( $this->ably, 'Ably\Models\PresenceMessage', $this->channel->getCipherParams(), 'GET', $this->channel->getPath() . '/presence/history', $params );
+        return new PaginatedResult( $this->ably, 'Ably\PubSub\Models\PresenceMessage', $this->channel->getCipherParams(), 'GET', $this->channel->getPath() . '/presence/history', $params );
     }
 }

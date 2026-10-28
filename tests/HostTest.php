@@ -1,8 +1,8 @@
 <?php
 namespace tests;
 
-use Ably\Host;
-use Ably\Models\ClientOptions;
+use Ably\PubSub\Host;
+use Ably\PubSub\Models\ClientOptions;
 
 /**
  * @testdox RSC15
@@ -17,15 +17,15 @@ class HostTest extends \PHPUnit\Framework\TestCase {
         $restHosts = new Host($clientOptions);
         // All expected hosts supposed to be tried upon
         $expectedFallbackHosts = [
-			"a.ably-realtime.com",
-			"b.ably-realtime.com",
-			"c.ably-realtime.com",
-			"d.ably-realtime.com",
-			"e.ably-realtime.com",
+			"main.a.fallback.ably-realtime.com",
+			"main.b.fallback.ably-realtime.com",
+			"main.c.fallback.ably-realtime.com",
+			"main.d.fallback.ably-realtime.com",
+			"main.e.fallback.ably-realtime.com",
 		];
 
         $prefHost = $restHosts->getPreferredHost();
-        self::assertEquals("rest.ably.io", $prefHost);
+        self::assertEquals("main.realtime.ably.net", $prefHost);
 
         $fallbacks = iterator_to_array($restHosts->fallbackHosts($prefHost));
         self::assertNotEquals($expectedFallbackHosts, $fallbacks);
@@ -42,20 +42,20 @@ class HostTest extends \PHPUnit\Framework\TestCase {
         $restHosts = new Host($clientOptions);
         // All expected hosts supposed to be tried upon
         $expectedFallbackHosts = [
-            "rest.ably.io",
-            "a.ably-realtime.com",
-            "c.ably-realtime.com",
-            "d.ably-realtime.com",
-            "e.ably-realtime.com",
+            "main.realtime.ably.net",
+            "main.a.fallback.ably-realtime.com",
+            "main.c.fallback.ably-realtime.com",
+            "main.d.fallback.ably-realtime.com",
+            "main.e.fallback.ably-realtime.com",
         ];
 
-        $restHosts->setPreferredHost("b.ably-realtime.com");
+        $restHosts->setPreferredHost("main.b.fallback.ably-realtime.com");
 
         $prefHost = $restHosts->getPreferredHost();
-        self::assertEquals("b.ably-realtime.com", $prefHost);
+        self::assertEquals("main.b.fallback.ably-realtime.com", $prefHost);
 
         $fallbacks = iterator_to_array($restHosts->fallbackHosts($prefHost));
-        self::assertEquals("rest.ably.io", $fallbacks[0]);
+        self::assertEquals("main.realtime.ably.net", $fallbacks[0]);
 
         sort($fallbacks);
         sort($expectedFallbackHosts);
@@ -70,16 +70,16 @@ class HostTest extends \PHPUnit\Framework\TestCase {
         $restHosts = new Host($clientOptions);
         // All expected hosts supposed to be tried upon
         $expectedFallbackHosts = [
-            "rest.ably.io",
-            "b.ably-realtime.com",
-            "a.ably-realtime.com",
-            "c.ably-realtime.com",
-            "d.ably-realtime.com",
-            "e.ably-realtime.com",
+            "main.realtime.ably.net",
+            "main.b.fallback.ably-realtime.com",
+            "main.a.fallback.ably-realtime.com",
+            "main.c.fallback.ably-realtime.com",
+            "main.d.fallback.ably-realtime.com",
+            "main.e.fallback.ably-realtime.com",
         ];
 
         $fallbacks = iterator_to_array($restHosts->fallbackHosts(""));
-        self::assertEquals("rest.ably.io", $fallbacks[0]);
+        self::assertEquals("main.realtime.ably.net", $fallbacks[0]);
 
         sort($fallbacks);
         sort($expectedFallbackHosts);
@@ -93,7 +93,7 @@ class HostTest extends \PHPUnit\Framework\TestCase {
         $clientOptions = new ClientOptions();
         $restHosts = new Host($clientOptions);
         $prefHost = $restHosts->getPreferredHost();
-        self::assertEquals("rest.ably.io", $prefHost);
+        self::assertEquals("main.realtime.ably.net", $prefHost);
     }
 }
 

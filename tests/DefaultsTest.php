@@ -1,37 +1,29 @@
 <?php
 namespace tests;
-use Ably\Defaults;
-use Ably\Models\ClientOptions;
+use Ably\PubSub\Defaults;
 
 class DefaultsTest extends \PHPUnit\Framework\TestCase {
 
     /**
-     * @testdox RSC15h
+     * @testdox REC2c1
      */
     public function testFallbackHosts() {
         $expectedFallbackHosts = [
-            "a.ably-realtime.com",
-            "b.ably-realtime.com",
-            "c.ably-realtime.com",
-            "d.ably-realtime.com",
-            "e.ably-realtime.com"
+            "main.a.fallback.ably-realtime.com",
+            "main.b.fallback.ably-realtime.com",
+            "main.c.fallback.ably-realtime.com",
+            "main.d.fallback.ably-realtime.com",
+            "main.e.fallback.ably-realtime.com"
         ];
-        $fallbackHosts = Defaults::$fallbackHosts;
-        $this->assertEquals($expectedFallbackHosts, $fallbackHosts);
+        $this->assertEquals($expectedFallbackHosts, Defaults::$fallbackHosts);
+        $this->assertEquals($expectedFallbackHosts, Defaults::getEndpointFallbackHosts(Defaults::$endpoint));
     }
 
     /**
-     * @testdox RSC15i
+     * @testdox REC1a
      */
-    public function testEnvironmentFallbackHosts() {
-        $expectedFallbackHosts = [
-            "sandbox-a-fallback.ably-realtime.com",
-            "sandbox-b-fallback.ably-realtime.com",
-            "sandbox-c-fallback.ably-realtime.com",
-            "sandbox-d-fallback.ably-realtime.com",
-            "sandbox-e-fallback.ably-realtime.com"
-        ];
-        $fallbackHosts = Defaults::getEnvironmentFallbackHosts("sandbox");
-        $this->assertEquals($expectedFallbackHosts, $fallbackHosts);
+    public function testDefaultEndpoint() {
+        $this->assertEquals('main', Defaults::$endpoint);
+        $this->assertEquals('main.realtime.ably.net', Defaults::getPrimaryDomain(Defaults::$endpoint));
     }
 }

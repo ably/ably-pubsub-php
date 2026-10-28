@@ -1,8 +1,8 @@
 <?php
 namespace tests;
-use Ably\AblyRest;
-use Ably\Auth;
-use Ably\Exceptions\AblyException;
+use Ably\PubSub\PubSubHttpClient;
+use Ably\PubSub\Auth;
+use Ably\PubSub\Exceptions\AblyException;
 
 require_once __DIR__ . '/factories/TestApp.php';
 
@@ -20,7 +20,7 @@ class TokenTest extends \PHPUnit\Framework\TestCase {
     public static function setUpBeforeClass(): void {
         self::$testApp = new TestApp();
         self::$defaultOptions = self::$testApp->getOptions();
-        self::$ably = new AblyRest( array_merge( self::$defaultOptions, [
+        self::$ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
         ] ) );
 
@@ -143,7 +143,7 @@ class TokenTest extends \PHPUnit\Framework\TestCase {
             'key' => $key->string,
         ];
 
-        $ably = new AblyRest( array_merge( self::$defaultOptions, [
+        $ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => 'fake.key:veryFake',
         ] ) );
 
@@ -211,7 +211,7 @@ class TokenTest extends \PHPUnit\Framework\TestCase {
             }
         ] );
 
-        $ablyTokenAuth = new AblyRest( $options );
+        $ablyTokenAuth = new PubSubHttpClient( $options );
         $ablyTokenAuth->auth->authorize();
         $tokenBefore = $ablyTokenAuth->auth->getTokenDetails()->token;
 
@@ -248,7 +248,7 @@ class TokenTest extends \PHPUnit\Framework\TestCase {
             }
         ] );
 
-        $ablyTokenAuth = new AblyRest( $options );
+        $ablyTokenAuth = new PubSubHttpClient( $options );
         $ablyTokenAuth->auth->authorize();
         $tokenBefore = $ablyTokenAuth->auth->getTokenDetails()->token;
 
@@ -285,7 +285,7 @@ class TokenTest extends \PHPUnit\Framework\TestCase {
             }
         ] );
 
-        $ablyTokenAuth = new AblyRest( $options );
+        $ablyTokenAuth = new PubSubHttpClient( $options );
         $channel = $ablyTokenAuth->channel( 'testchannel' );
 
         // do an authorised request with the valid token
@@ -312,7 +312,7 @@ class TokenTest extends \PHPUnit\Framework\TestCase {
         $options = array_merge( self::$defaultOptions, [
             'token' => $tokenDetails->token,
         ] );
-        $ablyTokenAuth = new AblyRest( $options );
+        $ablyTokenAuth = new PubSubHttpClient( $options );
         $channel = $ablyTokenAuth->channel( 'testchannel' );
         $channel->publish( 'test', 'test' ); // this should work
 

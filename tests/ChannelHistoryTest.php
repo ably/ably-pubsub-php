@@ -1,8 +1,8 @@
 <?php
 namespace tests;
-use Ably\AblyRest;
-use Ably\Channel;
-use Ably\Models\Message;
+use Ably\PubSub\PubSubHttpClient;
+use Ably\PubSub\Channel;
+use Ably\PubSub\Models\Message;
 
 require_once __DIR__ . '/factories/TestApp.php';
 
@@ -15,7 +15,7 @@ class ChannelHistoryTest extends \PHPUnit\Framework\TestCase {
     public static function setUpBeforeClass(): void {
         self::$testApp = new TestApp();
         self::$defaultOptions = self::$testApp->getOptions();
-        self::$ably = new AblyRest( array_merge( self::$defaultOptions, [
+        self::$ably = new PubSubHttpClient( array_merge( self::$defaultOptions, [
             'key' => self::$testApp->getAppKeyDefault()->string,
         ] ) );
     }
