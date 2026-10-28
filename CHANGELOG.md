@@ -1,6 +1,6 @@
 # Change Log
 
-## [2.0.0](https://github.com/ably/ably-pubsub-php/tree/pubsub-server/2.0.0) (unreleased)
+## [2.0.0](https://github.com/ably/ably-pubsub-php/tree/pubsub-server/2.0.0) (2026-10-28)
 
 [Full Changelog](https://github.com/ably/ably-pubsub-php/compare/1.1.12...pubsub-server/2.0.0)
 
@@ -28,6 +28,10 @@ the full mapping table.
 - The SDK agent identifier is now `ably-pubsub-php`, and the server side is declared by an `ably-pubsub-server` entry: `Ably-Agent: ably-pubsub-php/2.0.0 php/8.3.4 ably-pubsub-server`.
 - Added the `agents` client option (`array<string, string|null>`) so an SDK or framework built on this package can attribute its own traffic.
 - `rybakit/msgpack` is now constrained to `^0.9.1 || ^1.0`.
+
+**Merged pull requests:**
+
+- Integration branch for ably/pubsub-server v2 package [\#227](https://github.com/ably/ably-pubsub-php/pull/227)
 
 ## [1.1.12](https://github.com/ably/ably-php/tree/1.1.12) (2026-06-23)
 
