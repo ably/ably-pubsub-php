@@ -18,7 +18,7 @@ The client `Server::createHttpClient()` returns is the same REST client as befor
 | `AblyRest::setAblyAgentHeader('x', 'v')` | `Server::createHttpClient(['agents' => ['x' => 'v'], …])` |
 | `AblyRest::setLibraryFlavourString('x')` | removed — use the `agents` option |
 | `require 'ably-loader.php';` | removed — use Composer's autoloader (`vendor/autoload.php`) |
-| PHP 7.2 – 8.0 | PHP `^8.1` (tested on 8.1 – 8.5) |
+| PHP 7.2 – 8.0 | PHP 7.4 or later (tested on 7.4 and 8.1 – 8.5); 2.0.0 itself required PHP 8.1 |
 | `\Ably\AblyRest` type hints | `\Ably\PubSub\PubSubHttpClient` ([091d](https://ably.atlassian.net/wiki/spaces/product/pages/5363957781)) |
 | `'environment' => 'sandbox'` / `'restHost' => '…'` | `'endpoint' => …` (see [Endpoint](#endpoint-replaces-environment-and-resthost)) |
 
@@ -106,7 +106,7 @@ The `agents` option is per-client, unlike the process-global static setters it r
 * `ably-loader.php`, the hand-rolled autoloader — Composer is the only supported install path.
 * The `environment` and `restHost` client options — replaced by `endpoint`. They are ignored if passed.
 * The `demo/` Heroku application and its `Procfile`.
-* PHP 7.2 – 8.0 support.
+* PHP 7.2 – 8.0 support. Releases after 2.0.0 support PHP 7.4 and later again, so only PHP 7.2 and 7.3 remain unsupported.
 
 `Auth::authorise()`, the British-spelling alias deprecated in favour of `Auth::authorize()`, is still present in 2.0.0.
 
