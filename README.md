@@ -60,10 +60,7 @@ Always create clients with `Server::createHttpClient()`. A client created with
 `new PubSubHttpClient(...)` does not declare itself as a server.
 
 > [!IMPORTANT]
-> Clients from `Server::createHttpClient()` declare themselves as servers. Authenticate them with an
-> API key. A server client that must use a token needs an Ably JWT signed with your API key. The JWT
-> must carry the `x-ably-clientType` claim set to `server`. Ably rejects any other token, such as an
-> Ably Token or a JWT without the claim, with error 40167.
+> Server clients must authenticate with an API key. To use a token instead, see [Server clients and token authentication](https://ably.com/docs/auth/token#server-token-auth).
 
 Your server also issues the tokens that devices authenticate with. Return a token request from
 the endpoint your devices use as their `authUrl`:
