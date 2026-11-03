@@ -1,134 +1,195 @@
-![Ably Pub/Sub PHP Header](images/php-SDK-github.png)
-[![Latest Stable Version](https://poser.pugx.org/ably/pubsub-server/v/stable)](https://packagist.org/packages/ably/pubsub-server)
-[![License](https://poser.pugx.org/ably/pubsub-server/license)](https://github.com/ably/ably-pubsub-php/blob/main/LICENSE)
+![Ably Pub/Sub PHP Header](https://raw.githubusercontent.com/ably/ably-pubsub-php/main/images/php-SDK-github.png)
 
----
+[![Packagist: ably/pubsub-server](https://img.shields.io/packagist/v/ably/pubsub-server?label=ably%2Fpubsub-server)](https://packagist.org/packages/ably/pubsub-server)
+[![License](https://badgen.net/github/license/ably/ably-pubsub-php)](https://github.com/ably/ably-pubsub-php/blob/main/LICENSE)
 
 # Ably Pub/Sub PHP SDK
 
-Build using Ably’s Pub/Sub PHP SDK, supported on all popular platforms and frameworks.
+The PHP SDK for [Ably Pub/Sub](https://ably.com/docs/basics): publish messages to channels, read
+message history and presence, and issue tokens for your users, from servers over HTTP.
 
-Ably Pub/Sub provides flexible APIs that deliver features such as pub-sub messaging, message history, presence, and push notifications. Utilizing Ably’s realtime messaging platform, applications benefit from its highly performant, reliable, and scalable infrastructure.
+## Overview
 
-Find out more:
+This SDK provides the server package only, for trusted backends authenticating with an API key.
+There is no device package; for end-user devices, use a device SDK such as
+[JavaScript](https://github.com/ably/ably-pubsub-js), [Swift/Objective-C](https://github.com/ably/ably-pubsub-cocoa),
+[Java/Android](https://github.com/ably/ably-pubsub-java), [.NET](https://github.com/ably/ably-pubsub-dotnet)
+or [Flutter](https://github.com/ably/ably-pubsub-flutter).
 
-* [Ably Pub/Sub docs.](https://ably.com/docs/basics)
-* [Ably Pub/Sub examples.](https://ably.com/examples?product=pubsub)
+| Package | Use it for | Entry point |
+|---------|-----------|-------------|
+| `ably/pubsub-server` | Servers and other trusted backend environments | `Ably\PubSub\Server::createHttpClient()` |
 
----
+## Requirements
 
-## Getting started
-
-Everything you need to get started with Ably:
-
-* [Getting started with Pub/Sub using PHP.](https://ably.com/docs/getting-started/php)
-* [SDK Setup for PHP.](https://ably.com/docs/getting-started/setup?lang=php)
-
----
-
-## Package
-
-This SDK ships as a single package, `ably/pubsub-server`.
-
-The package name declares where your code runs. A server is a trusted runtime: it typically authenticates with an API key, one that a browser or a mobile app must never hold, and its connections are exempt from monthly-active-user counting. That declaration has to reach Ably rather than only the README, so the package sends it on every request in the `Ably-Agent` header:
-
-```
-Ably-Agent: ably-pubsub-php/2.0.0 php/8.3.4 ably-pubsub-server
-```
-
-The trailing `ably-pubsub-server` entry is the part the platform matches on. It is stamped by `Ably\PubSub\Server::createHttpClient()`, so a client constructed any other way declares no side, and will be rejected on accounts that have monthly-active-user pricing enabled.
-
-This is the only Ably Pub/Sub package for PHP. There is no device package and no separate core package to depend on, because PHP is a server-side language: this SDK is REST-only and there is no PHP realtime client. See the [Ably REST API](#ably-rest-api) note below for realtime options.
-
----
-
-## Supported platforms
-
-Ably aims to support a wide range of platforms. If you experience any compatibility issues, open an issue in the repository or contact [Ably support](https://ably.com/support).
-
-| Platform | Support |
-| --- | --- |
-| PHP | 8.1, 8.2, 8.3, 8.4, 8.5 |
-
----
-
-## Laravel packages
-
-For Laravel applications, consider these framework-integrated alternatives that provide Laravel integration with automatic configuration and native broadcasting support, eliminating the boilerplate setup required when using the raw PHP SDK directly:
-
-* **[Ably Pub/Sub PHP Laravel SDK](https://github.com/ably/ably-php-laravel)** - Laravel integration package with clean facade and dependency injection interface.
-* **[Ably Broadcaster for Laravel](https://github.com/ably/laravel-broadcaster)** - Official Laravel broadcaster for real-time event broadcasting.
-
-Each needs a new major version to run on `ably/pubsub-server`; their current releases depend on `ably/ably-php` 1.x. Those majors ship in the same release window as this package.
-
----
+PHP 8.1 or later (tested on 8.1 to 8.5), with the `curl`, `json` and `openssl` extensions.
 
 ## Installation
 
-To get started with your project, install the package:
-
-```sh
+```bash
 composer require ably/pubsub-server
 ```
----
 
+## Quick start
 
-## Usage
-
-The following code connects to Ably's REST messaging service, gets reference to a channel to receive messages, and publishes a test message to that same channel:
+Use an API key on a server. The samples read it from the `ABLY_API_KEY` environment variable; set it
+to an API key from your [Ably dashboard](https://ably.com/accounts/any/apps/any/app_keys). The
+following code publishes a message over HTTP, then reads the channel's history.
 
 ```php
+<?php
+require __DIR__ . '/vendor/autoload.php';
+
 use Ably\PubSub\Server;
 
-// Initialize the Ably HTTP (REST) client for a server
-$ably = Server::createHttpClient(['key' => 'your-ably-api-key', 'clientId' => 'me']);
+$ablyApiKey = getenv('ABLY_API_KEY');
+$client = Server::createHttpClient(['key' => $ablyApiKey]);
+$channel = $client->channels->get('test-channel');
 
-// Get a reference to the 'test-channel' channel
-$channel = $ably->channel('test-channel');
-
-// Publish a test message to the channel
 $channel->publish('test-event', 'hello world');
+
+$history = $channel->history();
+foreach ($history->items as $message) {
+    echo "Received: {$message->name}: {$message->data}\n";
+}
 ```
 
-`createHttpClient()` accepts everything the 1.x client constructor accepted: an options array, an API key string, a token string, or a `ClientOptions` instance.
+A failed request throws an `Ably\PubSub\Exceptions\AblyException`.
 
-If your own SDK or framework wraps this package, name it so its traffic is attributed to it:
+Always create clients with `Server::createHttpClient()`. A client created with
+`new PubSubHttpClient(...)` does not declare itself as a server.
+
+> [!IMPORTANT]
+> Clients from `Server::createHttpClient()` declare themselves as servers. Authenticate them with an
+> API key. A server client that must use a token needs an Ably JWT signed with your API key. The JWT
+> must carry the `x-ably-clientType` claim set to `server`. Ably rejects any other token, such as an
+> Ably Token or a JWT without the claim, with error 40167.
+
+Your server also issues the tokens that devices authenticate with. Return a token request from
+the endpoint your devices use as their `authUrl`:
 
 ```php
-$ably = Server::createHttpClient([
-    'key' => 'your-ably-api-key',
-    'agents' => ['my-framework' => '1.2.3'],
+<?php
+require __DIR__ . '/vendor/autoload.php';
+
+use Ably\PubSub\Server;
+
+$ablyApiKey = getenv('ABLY_API_KEY');
+$client = Server::createHttpClient(['key' => $ablyApiKey]);
+
+// Authenticate the caller first. Grant only the operations this user needs.
+$tokenRequest = $client->auth->createTokenRequest([
+    'clientId' => 'me', // the authenticated user's ID
+    // Without a capability, the token gets all of the API key's capabilities.
+    'capability' => ['test-channel' => ['publish', 'subscribe', 'history']],
+]);
+
+header('Content-Type: application/json');
+echo json_encode($tokenRequest->toArray());
+```
+
+See [token authentication](https://ably.com/docs/auth/token) for how devices use it.
+
+## Migrating from 1.x
+
+Version 2.0 renames the package and namespace, and creates clients with a factory method.
+
+| | 1.x | 2.0 |
+|---|---|---|
+| Package | `ably/ably-php` | `ably/pubsub-server` |
+| Namespace | `Ably\` | `Ably\PubSub\` |
+| HTTP client | `new AblyRest($options)` | `Server::createHttpClient($options)` |
+
+See [UPDATING.md](https://github.com/ably/ably-pubsub-php/blob/main/UPDATING.md#1x-ablyably-php--200-ablypubsub-server) for all other changes.
+
+## Common configuration
+
+`Server::createHttpClient()` takes an options array or an `Ably\PubSub\Models\ClientOptions`
+object.
+
+### Endpoint
+
+`endpoint` selects the Ably host for HTTP requests. It replaces the 1.x `environment` and
+`restHost` options. 2.0 ignores those options, so a client that still sets them connects to
+production.
+
+```php
+$ablyApiKey = getenv('ABLY_API_KEY');
+$client = Server::createHttpClient([
+    'key' => $ablyApiKey,
+    'endpoint' => 'nonprod:sandbox',
 ]);
 ```
 
----
+- Never put a port in `endpoint`: `localhost:8080` is not a hostname and does not resolve.
+- Set the port with `tlsPort`, or with `port` when TLS is off.
+- With TLS off (`'tls' => false`), use token authentication.
 
-## Migrating from `ably/ably-php` 1.x
+See [UPDATING.md](https://github.com/ably/ably-pubsub-php/blob/main/UPDATING.md#endpoint-replaces-environment-and-resthost) for how the old options
+map to `endpoint`.
 
-`ably/pubsub-server` 2.0.0 supersedes `ably/ably-php`. The client it returns is the same REST client, so for most applications the migration is confined to the `composer require` line, the `use` statements, and the constructor call. [UPDATING.md](./UPDATING.md) has the full mapping table and a before/after example.
+### Proxy
 
-If you are staying on 1.x for now, it is maintained on the `maintenance/1.x` branch of this repository, and receives security and critical-bug fixes only for one year from the 2.0.0 release.
+To send every request through a proxy, set `http_proxy` (or `https_proxy`) in `$_SERVER`. From
+the PHP command line, an environment variable does this. Put any proxy credentials in the URL:
 
----
+```bash
+export http_proxy=http://username:password@proxy.example.com:8080
+```
 
-## Releases
+### Logging
 
-The [CHANGELOG.md](./CHANGELOG.md) contains details of the latest releases for this SDK. You can also view all Ably releases on [changelog.ably.com](https://changelog.ably.com).
+Set `logLevel` to `Log::NONE`, `Log::ERROR`, `Log::WARNING` (the default), `Log::DEBUG` or
+`Log::VERBOSE`. Logs go to standard output. To handle them yourself, set `logHandler`:
 
----
+```php
+use Ably\PubSub\Log;
+use Ably\PubSub\Server;
+
+$ablyApiKey = getenv('ABLY_API_KEY');
+$client = Server::createHttpClient([
+    'key' => $ablyApiKey,
+    'logLevel' => Log::DEBUG,
+    'logHandler' => function ($level, $args) {
+        error_log('Ably: ' . json_encode($args));
+    },
+]);
+```
+
+Logging settings are global: the most recently created client sets them for the whole process.
+
+## Platform notes
+
+### Laravel
+
+The current releases of Ably's [Laravel broadcaster](https://github.com/ably/laravel-broadcaster)
+and [Laravel SDK](https://github.com/ably/ably-php-laravel) depend on `ably/ably-php` 1.x, not on
+`ably/pubsub-server`. See [Getting started with Laravel](https://ably.com/docs/getting-started/laravel).
+
+## Known limitations
+
+- The SDK has no realtime client. It uses the [Ably REST API](https://ably.com/docs/api/rest-api)
+  only, so it can't subscribe to channels or enter presence.
+- To receive messages in PHP, use Ably's [MQTT adapter](https://ably.com/docs/protocols/mqtt)
+  with an MQTT client such as [Mosquitto-PHP](https://github.com/mgdm/Mosquitto-PHP).
+
+## Further reading
+
+- [Getting started with Pub/Sub using PHP](https://ably.com/docs/getting-started/php)
+- [Ably Pub/Sub documentation](https://ably.com/docs/basics) and [examples](https://ably.com/examples?product=pubsub)
+- [Token authentication](https://ably.com/docs/auth/token)
+- [UPDATING.md](https://github.com/ably/ably-pubsub-php/blob/main/UPDATING.md): migrating from 1.x
+- [CHANGELOG.md](https://github.com/ably/ably-pubsub-php/blob/main/CHANGELOG.md): release notes; all Ably releases are listed on [changelog.ably.com](https://changelog.ably.com)
 
 ## Contributing
 
-Read the [CONTRIBUTING.md](./CONTRIBUTING.md) guidelines to contribute to Ably.
+Read [CONTRIBUTING.md](https://github.com/ably/ably-pubsub-php/blob/main/CONTRIBUTING.md) before contributing.
 
-Development happens in this repository, `ably-pubsub-php`. The Packagist package is published from a read-only distribution mirror, so issues and pull requests belong here.
+## Support, feedback and troubleshooting
 
----
+For help, visit Ably's [support page](https://ably.com/support). Report bugs and compatibility
+problems on [GitHub Issues](https://github.com/ably/ably-pubsub-php/issues).
 
-## Support, feedback, and troubleshooting
+## License
 
-For help or technical support, visit the [Ably Support page](https://ably.com/support).
-
-### Ably REST API
-
-This SDK currently supports only the [Ably REST API](https://www.ably.com/docs/rest). For realtime capabilities, you can use the [MQTT adapter](https://www.ably.com/docs/mqtt) alongside [Mosquitto PHP](https://github.com/mgdm/Mosquitto-PHP) to implement Ably's Realtime features.
+Licensed under the Apache License, Version 2.0. See [LICENSE](https://github.com/ably/ably-pubsub-php/blob/main/LICENSE).
