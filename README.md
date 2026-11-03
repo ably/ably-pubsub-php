@@ -48,7 +48,7 @@ Ably aims to support a wide range of platforms. If you experience any compatibil
 
 | Platform | Support |
 | --- | --- |
-| PHP | 8.1, 8.2, 8.3, 8.4, 8.5 |
+| PHP | 7.4 and later (tested on 7.4 and 8.1 – 8.5) |
 
 ---
 

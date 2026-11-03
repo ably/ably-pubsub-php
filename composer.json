@@ -8,7 +8,7 @@
         "issues": "https://github.com/ably/ably-pubsub-php/issues"
     },
     "require": {
-        "php": "^8.1",
+        "php": "^7.4 || ^8.0",
         "rybakit/msgpack": "^0.9.1 || ^1.0",
         "ext-json" : "*",
         "ext-curl" : "*",
