@@ -62,11 +62,12 @@ Always create clients with `Server::createHttpClient()`. A client created with
 > [!IMPORTANT]
 > Server clients must authenticate with an API key. To use a token instead, see [Server clients and token authentication](https://ably.com/docs/auth/token#server-token-auth).
 
-Your server also issues the tokens that devices authenticate with. Return a token request from
-the endpoint your devices use as their `authUrl`:
+The following script issues token requests at `/ably-auth`. Devices using a device SDK set
+`authUrl` to its URL, for example `https://your-server.example.com/ably-auth`:
 
 ```php
 <?php
+// ably-auth.php: serve this script at /ably-auth.
 require __DIR__ . '/vendor/autoload.php';
 
 use Ably\PubSub\Server;
@@ -75,8 +76,9 @@ $ablyApiKey = getenv('ABLY_API_KEY');
 $client = Server::createHttpClient(['key' => $ablyApiKey]);
 
 // Authenticate the caller first. Grant only the operations this user needs.
+$userId = 'me'; // the signed-in user's ID, from your session
 $tokenRequest = $client->auth->createTokenRequest([
-    'clientId' => 'me', // the authenticated user's ID
+    'clientId' => $userId,
     // Without a capability, the token gets all of the API key's capabilities.
     'capability' => ['test-channel' => ['publish', 'subscribe', 'history']],
 ]);
@@ -86,6 +88,9 @@ echo json_encode($tokenRequest->toArray());
 ```
 
 See [token authentication](https://ably.com/docs/auth/token) for how devices use it.
+
+On Laravel, use the [Laravel broadcaster](https://github.com/ably/laravel-broadcaster) instead: it
+issues tokens to Ably's fork of Laravel Echo from Laravel's `/broadcasting/auth` route.
 
 ## Migrating from 1.x
 
