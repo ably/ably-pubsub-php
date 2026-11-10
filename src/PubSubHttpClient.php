@@ -107,7 +107,6 @@ class PubSubHttpClient {
         $this->channels = new Channels( $this );
         $this->push = new Push( $this );
         $this->host = new Host($this->options);
-        return $this;
     }
 
     /**
