@@ -3,7 +3,7 @@ namespace Ably\PubSub;
 
 class Defaults {
     const API_VERSION = '2';
-    const LIB_VERSION = '2.0.0';
+    const LIB_VERSION = '2.0.1';
 
     static $endpoint = 'main';
     static $port = 80;

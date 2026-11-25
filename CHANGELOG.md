@@ -1,8 +1,27 @@
 # Change Log
 
-## [2.0.0](https://github.com/ably/ably-pubsub-php/tree/pubsub-server/2.0.0) (2026-10-28)
+## [2.0.1](https://github.com/ably/ably-pubsub-php/tree/2.0.1) (2026-11-25)
 
-[Full Changelog](https://github.com/ably/ably-pubsub-php/compare/1.1.12...pubsub-server/2.0.0)
+[Full Changelog](https://github.com/ably/ably-pubsub-php/compare/2.0.0...2.0.1)
+
+`rybakit/msgpack` is now constrained to `>=0.9.1 <1.0`, allowing 0.10, 0.11 and
+later 0.x releases. 2.0.0's `^0.9.1 || ^1.0` capped it at 0.9.2. On 64-bit
+PHP 8.2+, a fresh install resolves msgpack 0.11, which hardens unpacking. An
+existing project keeps its locked msgpack 0.9.2 unless it updates both
+packages, e.g. `composer update ably/pubsub-server rybakit/msgpack`, or
+`composer require ably/pubsub-server:^2.0.1 -W`. PHP 8.1 continues to use 0.9.2.
+
+**Closed issues:**
+
+- rybakit/msgpack constraint "^0.9.1 || ^1.0" blocks msgpack 0.10 and 0.11 [\#235](https://github.com/ably/ably-pubsub-php/issues/235)
+
+**Merged pull requests:**
+
+- Allow rybakit/msgpack 0.10, 0.11 and later 0.x releases (>=0.9.1 <1.0) [\#236](https://github.com/ably/ably-pubsub-php/pull/236) ([sacOO7](https://github.com/sacOO7))
+
+## [2.0.0](https://github.com/ably/ably-pubsub-php/tree/2.0.0) (2026-10-28)
+
+[Full Changelog](https://github.com/ably/ably-pubsub-php/compare/1.1.12...2.0.0)
 
 The first release of the `ably/pubsub-server` package, superseding
 `ably/ably-php`. See [`UPDATING.md`](./UPDATING.md) for the migration guide and
