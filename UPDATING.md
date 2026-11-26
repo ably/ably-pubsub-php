@@ -119,4 +119,4 @@ The `agents` option is per-client, unlike the process-global static setters it r
 
 ### Staying on 1.x
 
-`ably/ably-php` 1.x is maintained on the `maintenance/1.x` branch of this repository. It gets security and critical-bug fixes for one year from the 2.0.0 release date and no new features, then reaches end-of-life. Both packages can be installed side by side during a migration: they declare different namespaces and different PSR-4 prefixes, so their autoloading does not collide.
+`ably/ably-php` 1.x is maintained on the `1.x` branch of this repository. It gets security and critical-bug fixes for one year from the 2.0.0 release date and no new features, then reaches end-of-life. Both packages can be installed side by side during a migration: they declare different namespaces and different PSR-4 prefixes, so their autoloading does not collide.
